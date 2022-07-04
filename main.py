@@ -38,8 +38,7 @@ if not data['pull_request']['merged'] and data['pull_request']['state'] == 'open
 	comments = get_pr_comments(pr=pr)
 	
 	if TASK_URL and TASK_URL_COMMENT not in comments:
-		pr.create_issue_comment(body=TASK_URL_COMMENT)
-	pr.update(body=TASK_URL_COMMENT)
+		pr.update(body=TASK_URL_COMMENT)
 	
 	available_statuses, task_done = move_task(
 		ignore_tasks=ignore_tasks,
