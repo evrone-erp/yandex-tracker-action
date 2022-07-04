@@ -21,6 +21,8 @@ MESSAGE = env('INPUT_MESSAGE', '')
 github = Github(GITHUB_TOKEN)
 repo = github.get_repo(GITHUB_REPOSITORY)
 
+
+# TODO Get TASK KEY from PR commit message: TASK_KEY = re.match(r"[^[]*\[([^]]*)\]", string).groups()[0] if not TASK_KEY else TASK_KEY
 TASK_KEY = env('GITHUB_HEAD_REF').split('/')[1] if not TASK_KEY else TASK_KEY
 TASK_URL_COMMENT = f'Task url: https://tracker.yandex.ru/{TASK_KEY}'
 ignore_tasks = IGNORE_TASKS.split(',') if IGNORE_TASKS else []
