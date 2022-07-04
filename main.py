@@ -23,7 +23,7 @@ github = Github(GITHUB_TOKEN)
 repo = github.get_repo(GITHUB_REPOSITORY)
 
 TASK_KEY = env('GITHUB_HEAD_REF').split('/')[1] if not TASK_KEY else TASK_KEY
-TASK_URL_COMMENT = f'Task url:\nhttps://tracker.yandex.ru/{TASK_KEY}'
+TASK_URL_COMMENT = f'Task url: https://tracker.yandex.ru/{TASK_KEY}'
 ignore_tasks = IGNORE_TASKS.split(',') if IGNORE_TASKS else []
 
 with open(env('GITHUB_EVENT_PATH', 'r')) as f:
@@ -35,11 +35,9 @@ pr = repo.get_pull(number=int(pr_number))
 if not data['pull_request']['merged'] and data['pull_request']['state'] == 'open':
 
 	TO = 'in_review' if not TO else TO
-	comments = get_pr_comments(pr=pr)
 	
-	if TASK_URL and TASK_URL_COMMENT not in comments:
-		pr.create_issue_comment(body=TASK_URL_COMMENT)
-	pr.update(body=TASK_URL_COMMENT)
+	# TODO check if description not equal to the TASK_URL_COMMENT?
+	pr.edit(body=TASK_URL_COMMENT)
 	
 	available_statuses, task_done = move_task(
 		ignore_tasks=ignore_tasks,
