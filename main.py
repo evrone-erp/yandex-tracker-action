@@ -23,7 +23,7 @@ github = Github(GITHUB_TOKEN)
 repo = github.get_repo(GITHUB_REPOSITORY)
 
 TASK_KEY = env('GITHUB_HEAD_REF').split('/')[1] if not TASK_KEY else TASK_KEY
-TASK_URL_COMMENT = f'Task url:\nhttps://tracker.yandex.ru/{TASK_KEY}'
+TASK_URL_COMMENT = f'Task url: https://tracker.yandex.ru/{TASK_KEY}'
 ignore_tasks = IGNORE_TASKS.split(',') if IGNORE_TASKS else []
 
 with open(env('GITHUB_EVENT_PATH', 'r')) as f:
