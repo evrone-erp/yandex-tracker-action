@@ -4,7 +4,6 @@ from environs import Env
 from github import Github
 
 from utils.yc_requests import move_task
-from utils.helpers import get_pr_comments
 
 
 env = Env()
