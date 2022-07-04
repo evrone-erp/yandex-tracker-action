@@ -1,0 +1,36 @@
+name: Move Yandex Tracker Task On Board 
+description: This action help you to automate task progress on board
+inputs:
+  ignore:
+    required: false
+    description: Task that need to be ignored. Long lifecycle tasks, e.g. daily task
+  message:
+    required: false
+    description: Message to send to the task
+  task_key:
+    required: false
+    description: The task key. If not set - parse from branch name, e.g. <fix/ERP-11/find-a-bug>. ERP-11 will be TASK_KEY
+  task_url:
+    required: false
+    default: 'false'
+    description: If true - set comment with the task url <https://tracker.yandex.ru/TASK_KEY> on pull_request
+  to:
+    required: false
+    description: When PR is open or merged where should action move the task on the tracker board
+  token:
+    required: true
+    description: Github Token. Needed when TASK_URL is true. For setting comments on PR
+  yandex_oauth2_token:
+    required: true
+    description: YANDEX OAUTH2 token. From what account send the request with payload
+  yandex_org_id:
+    required: true
+    description: YANDEX organization id for send the request with payload
+
+runs:
+  using: docker
+  image: 'Dockerfile'
+
+branding:
+  icon: arrow-down
+  color: blue
