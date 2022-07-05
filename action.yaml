@@ -4,10 +4,7 @@ inputs:
   ignore:
     required: false
     description: Task that need to be ignored. Long lifecycle tasks, e.g. daily task
-  message:
-    required: false
-    description: Message to send to the task
-  task_key:
+  tasks:
     required: false
     description: The task key. If not set - parse from branch name, e.g. <fix/ERP-11/find-a-bug>. ERP-11 will be TASK_KEY
   task_url:

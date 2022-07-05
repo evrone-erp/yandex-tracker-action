@@ -1,61 +1,72 @@
 # Yandex Tracker action
 
-Move the task on Yandex Tracker board.
+This action allows you to automatically move tasks on the board. Move the task on Yandex Tracker board.
 
+By default, it parses commits of the form `"[RI-1] implement something"` and takes the task number, which in this case is `RI-1`.
+
+You can also set tasks directly in the action, for example, by specifying the output from previous job.
+
+If there are multiple commits with different task keys in the pull request, they will both be moved on the board.
+
+It is also possible to specify multiple tasks in an action. See documentation below.
+
+Please be free to any issue.
 ## Usage
 
 ### Basic
 
+By default, commit messages such as "[RI-1] awesome-feature" will be parsed, where "RI-1" will be the feature key. You can specify a specific task key. You can use the logic from the previous job step.
+
 ```yaml
 - uses: ./
-    with:
-      token: ${{secrets.GITHUB_TOKEN}}
-      yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
-      yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+  with:
+    token: ${{secrets.GITHUB_TOKEN}}
+    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
 ```
 
-### Add specific task key
+ ### Add specific task key
 
-By default parsing branch name like `feature/DI-1/awesome-feature` where `DI-1` will be the task key. You can provide specific task key. You can use logic from previous job step.
+You can specify task numbers separated by commas.
 
 ````yaml
 - uses: ./
-    with:
-      token: ${{secrets.GITHUB_TOKEN}}
-      yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
-      yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
-      task_key: RI-218
+  with:
+    token: ${{secrets.GITHUB_TOKEN}}
+    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    tasks: RI-218 # or RI-218,RI-11
 ````
 
 ### Add ignore tasks
 
-You may need to ignore some long lifecycle tasks. Add tasks separeted by comma.
+You may need to ignore some long lifecycle tasks. Add tasks separeted by comma.If you have long-running tasks that you do not want to automatically move, then you can ignore them.
 
 ````yaml
 - uses: ./
-    with:
-      token: ${{secrets.GITHUB_TOKEN}}
-      yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
-      yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
-      ignore: RI-1,DI-8
+  with:
+    token: ${{secrets.GITHUB_TOKEN}}
+    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    ignore: RI-1 # or RI-1,DI-8
 ````
 
 ### Comment PR with task url
 
-If true - will be set comment to the current PR with task url like <https://tracker.yandex.ru/TASK_KEY>
+If true - a comment will be set to the current PR with the task address of the form <https://tracker.yandex.ru/TASK_KEY> in the PR description
 
 ```yaml
 - uses: ./
-    with:
-      token: ${{secrets.GITHUB_TOKEN}}
-      yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
-      yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
-      task_url: true
+  with:
+    token: ${{secrets.GITHUB_TOKEN}}
+    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    task_url: true
 ```
 
 ### In what state move the task
 
-By default if PR is opened, the task will move to `in_review` state. If PR is merged - `resolve` state. You can provide *human readable name* or endpoint name.
+By default, if the PR is open, the task will go into the `in_review` state. If the PRs are merged, the state is `resolve`. You can specify a *human readable name* or endpoint name.
 
 Get all available states:
 
@@ -67,16 +78,16 @@ Also you can see output of the action and find these states there.
 
 ```yaml
 - uses: ./
-    with:
-      token: ${{secrets.GITHUB_TOKEN}}
-      yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
-      yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
-      to: 'На ревью' # or 'in_review'
+  with:
+    token: ${{secrets.GITHUB_TOKEN}}
+    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    to: 'На ревью' # or 'in_review'
 ```
 
 ### One move if PR is opened and one move if is merged
 
-You can move the task when PR is opened and when PR is merged. See above default state names.
+You can move an issue when opening a PR and when merging a PR into different transitions. See default state names above.
 
 ```yaml
 - name: Move Task When PR Opened
@@ -86,6 +97,7 @@ You can move the task when PR is opened and when PR is merged. See above default
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
     yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    to: 'in_review'
 
 - name: Move Task When PR Merged
   if: github.event.pull_request.merged == true
@@ -94,6 +106,7 @@ You can move the task when PR is opened and when PR is merged. See above default
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
     yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    to: 'merged'
 ```
 ## Inputs
 
@@ -101,17 +114,17 @@ You can move the task when PR is opened and when PR is merged. See above default
 
 **Optional** Ignored tasks separated by comma.
 
-### `task_key`
+### `tasks`
 
-**Optional** Task key that need to move on board.
+**Optional** The task key to be moved on board.
 
 ### `task_url`
 
-**Optional** Default is false. Set to true if you want comment PR with task url.
+**Optional** The default value is false. Set to true if you want to comment on a PR with the task URL.
 
 ### `to`
 
-**Optional** State where need to move the task. By default for opened PR is `in_review` and for merged - `resolve`.
+**Optional** Specify where you want to move the task. The default is `in_review` for open PRs and `resolve` for merged PRs.
 
 ### `token`
 
@@ -119,34 +132,8 @@ You can move the task when PR is opened and when PR is merged. See above default
 
 ### `yandex_oauth2_token`
 
-**Required** Yandex oauth2 token. You need to register OAUTH2 app and than get user token. [Documentation](https://yandex.ru/dev/id/doc/dg/oauth/concepts/about.html).
+**Required** Yandex oauth2 token. You need to register an OAUTH2 application and then get a user token. [Documentation](https://yandex.ru/dev/id/doc/dg/oauth/concepts/about.html).
 
 ### `yandex_org_id`
 
-**Required** Id of organization registerd in Yandex Tracker.
-
-## Outputs
-
-### `available_statuses`
-
-Available transition statuses for provided task on Yandex Tracker board.
-
-### `task_done`
-
-Full response from Yandex Tracker API in json format. If task already in the state, than `NOTHING TO DO` message will be printed.
-
-### `task_key`
-
-Task key working with.
-
-### `ignore`
-
-List of ignored tasks. If provided in a job.
-
-### `to`
-
-In what state task will be move.
-
-### `task_url`
-
-Enabled or disabled PR commentary with task url.
+**Required** ID of organization registerd in Yandex Tracker.

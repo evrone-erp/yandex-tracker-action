@@ -15,62 +15,62 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - uses: actions-ecosystem/action-regex-match@v2
-        id: branch-match
-        with:
-          text: ${{ github.head_ref }}
-          regex: '(feature|fix|epic|infra|docs|support)\/([A-Z]+)-([0-9]+)\/(([a-z]+)[\-]?)+'
+      # - uses: actions-ecosystem/action-regex-match@v2
+      #   id: branch-match
+      #   with:
+      #     text: ${{ github.head_ref }}
+      #     regex: '(feature|fix|epic|infra|docs|support)\/([A-Z]+)-([0-9]+)\/(([a-z]+)[\-]?)+'
 
-      - name: Get Commit Message
-        id: commit
-        run: |
-          COMMIT_MSG=$(git log --format=%B -n 1)
-          echo ::set-output name=COMMIT_MSG::${COMMIT_MSG}
+      # - name: Get Commit Message
+      #   id: commit
+      #   run: |
+      #     COMMIT_MSG=$(git log --format=%B -n 1)
+      #     echo ::set-output name=COMMIT_MSG::${COMMIT_MSG}
 
-      - uses: actions-ecosystem/action-regex-match@v2
-        id: commit-match
-        with:
-          text: ${{ steps.commit.outputs.COMMIT_MSG }}
-          regex: '(\[[A-Z]+)-([0-9]+]).+'
+      # - uses: actions-ecosystem/action-regex-match@v2
+      #   id: commit-match
+      #   with:
+      #     text: ${{ steps.commit.outputs.COMMIT_MSG }}
+      #     regex: '(\[[A-Z]+)-([0-9]+]).+'
 
-      - name: Labeling PR
-        uses: actions-ecosystem/action-add-labels@v1
-        if: ${{ steps.branch-match.outputs.match != '' }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          labels: ${{ steps.branch-match.outputs.group1 }}
+      # - name: Labeling PR
+      #   uses: actions-ecosystem/action-add-labels@v1
+      #   if: ${{ steps.branch-match.outputs.match != '' }}
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     labels: ${{ steps.branch-match.outputs.group1 }}
 
-      - name: Comment PR If Branch Name is Wrong
-        if: ${{ steps.branch-match.outputs.match == '' && github.event.action != 'closed' }}
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-         message: |
-          :point_right: **Именование ветки не соответствует документации** 
-          https://wiki.evrone.com/ru/secured/projects/evrone-erp/tech-standarts/branching :pray:
+      # - name: Comment PR If Branch Name is Wrong
+      #   if: ${{ steps.branch-match.outputs.match == '' && github.event.action != 'closed' }}
+      #   uses: marocchino/sticky-pull-request-comment@v2
+      #   with:
+      #    message: |
+      #     :point_right: **Именование ветки не соответствует документации** 
+      #     https://wiki.evrone.com/ru/secured/projects/evrone-erp/tech-standarts/branching :pray:
 
 
-      - name: Comment PR If Commit Name is Wrong
-        if: ${{ steps.commit-match.outputs.match == '' && github.event.action != 'closed' }}
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-         message: |
-          :point_right: **Именование коммита не соответствует документации** 
-          https://wiki.evrone.com/ru/secured/projects/evrone-erp/tech-standarts/branching :pray:
+      # - name: Comment PR If Commit Name is Wrong
+      #   if: ${{ steps.commit-match.outputs.match == '' && github.event.action != 'closed' }}
+      #   uses: marocchino/sticky-pull-request-comment@v2
+      #   with:
+      #    message: |
+      #     :point_right: **Именование коммита не соответствует документации** 
+      #     https://wiki.evrone.com/ru/secured/projects/evrone-erp/tech-standarts/branching :pray:
 
-      - name: Comment PR If Commits Count More Than One
-        if: ${{ github.event.pull_request.commits > 1 && github.event.action != 'closed' }}
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-         message: |
-           :point_right: **Не забудь засквошить коммиты!** :pray:
+      # - name: Comment PR If Commits Count More Than One
+      #   if: ${{ github.event.pull_request.commits > 1 && github.event.action != 'closed' }}
+      #   uses: marocchino/sticky-pull-request-comment@v2
+      #   with:
+      #    message: |
+      #      :point_right: **Не забудь засквошить коммиты!** :pray:
 
-      - name: Wrong Branch Name
-        if: ${{ steps.branch-match.outputs.match == '' }}
-        run: exit 1
+      # - name: Wrong Branch Name
+      #   if: ${{ steps.branch-match.outputs.match == '' }}
+      #   run: exit 1
       
-      - name: Wrong Commit Name
-        if: ${{ steps.commit-match.outputs.match == '' }}
-        run: exit 1
+      # - name: Wrong Commit Name
+      #   if: ${{ steps.commit-match.outputs.match == '' }}
+      #   run: exit 1
 
       - name: Move Task When PR Opened
         if: github.event.action != 'closed'
