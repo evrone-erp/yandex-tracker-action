@@ -18,7 +18,7 @@ Please be free to any issue.
 By default, commit messages such as "[RI-1] awesome-feature" will be parsed, where "RI-1" will be the feature key. You can specify a specific task key. You can use the logic from the previous job step.
 
 ```yaml
-- uses: ./
+- uses: evrone-erp/yandex-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -30,7 +30,7 @@ By default, commit messages such as "[RI-1] awesome-feature" will be parsed, whe
 You can specify task numbers separated by commas.
 
 ````yaml
-- uses: ./
+- uses: evrone-erp/yandex-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -43,7 +43,7 @@ You can specify task numbers separated by commas.
 You may need to ignore some long lifecycle tasks. Add tasks separeted by comma.If you have long-running tasks that you do not want to automatically move, then you can ignore them.
 
 ````yaml
-- uses: ./
+- uses: evrone-erp/yandex-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -56,7 +56,7 @@ You may need to ignore some long lifecycle tasks. Add tasks separeted by comma.I
 If true - a comment will be set to the current PR with the task address of the form <https://tracker.yandex.ru/TASK_KEY> in the PR description
 
 ```yaml
-- uses: ./
+- uses: evrone-erp/yandex-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -77,7 +77,7 @@ curl -H "Authorization: OAuth <oauth2-token>" -H "X-Org-ID: <org-id>" -H "Conten
 Also you can see output of the action and find these states there.
 
 ```yaml
-- uses: ./
+- uses: evrone-erp/yandex-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -92,7 +92,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 ```yaml
 - name: Move Task When PR Opened
   if: github.event.action != 'closed'
-  uses: ./
+  uses: evrone-erp/yandex-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -101,7 +101,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 
 - name: Move Task When PR Merged
   if: github.event.pull_request.merged == true
-  uses: ./
+  uses: evrone-erp/yandex-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -137,3 +137,5 @@ You can move an issue when opening a PR and when merging a PR into different tra
 ### `yandex_org_id`
 
 **Required** ID of organization registerd in Yandex Tracker.
+
+[<img src="https://evrone.com/logo/evrone-sponsored-logo.png" width=231>](https://evrone.com/?utm_source=evrone-django-template)
