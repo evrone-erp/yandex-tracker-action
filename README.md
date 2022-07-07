@@ -1,5 +1,7 @@
 # Yandex Tracker action
 
+[RUS](https://github.com/evrone-erp/yandex-tracker-action/blob/master/README_RUS.md)
+
 This action allows you to automatically move tasks on the board. Move the task on Yandex Tracker board.
 
 By default, it parses commits of the form `"[RI-1] implement something"` and takes the task number, which in this case is `RI-1`.
