@@ -5,9 +5,9 @@ from github.PullRequest import PullRequest
 
 
 def _prepare_description(
-    *,
-    task_keys: list[str],
-    pr: PullRequest,
+  *,
+  task_keys: list[str],
+  pr: PullRequest,
 ) -> str:
   """
   Update existing PR description with links to the task keys.
@@ -19,21 +19,22 @@ def _prepare_description(
   """
   body = pr.body
   description = [
-      f'https://tracker.yandex.ru/{task}' for task in filter(None, task_keys)]
+    f'https://tracker.yandex.ru/{task}' for task in filter(None, task_keys)]
 
   if body:
     updated_description = list(
-        set(description + [item.strip() for item in body.split('\n')]))
+      set(description + [item.strip() for item in body.split('\n')]))
   else:
     updated_description = description
+  
   updated_description.sort()
 
   return '\n'.join(updated_description).strip()
 
 
 def get_pr_commits(
-    *,
-    pr: PullRequest,
+  *,
+  pr: PullRequest,
 ) -> list[str]:
   """
   Get all commits from PR to a list if there are many, or str if there is one. 
@@ -55,9 +56,9 @@ def get_pr_commits(
 
 
 def set_pr_body(
-    *,
-    task_keys: list[str],
-    pr: PullRequest,
+  *,
+  task_keys: list[str],
+  pr: PullRequest,
 ) -> None:
   """
   Set PR description with link to tracker task.
@@ -73,8 +74,8 @@ def set_pr_body(
 
 
 def check_if_pr(
-    *,
-    data: dict[str, str]
+  *,
+  data: dict[str, str]
 ):
   """
   Checking the pull_request key in action.
