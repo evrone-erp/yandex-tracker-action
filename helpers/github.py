@@ -4,30 +4,54 @@ import sys
 from github.PullRequest import PullRequest
 
 
+def _prepare_description(
+    *,
+    task_keys: list[str],
+    pr: PullRequest,
+) -> str:
+  """
+  Update existing PR description with links to the task keys.
+  Args:
+    task_keys: List of the Yandex tracker tasks from action.
+    pr: github PullRequest object.
+  Return:
+    Desctiption in string format separated with new line.
+  """
+  body = pr.body
+  description = [
+      f'https://tracker.yandex.ru/{task}' for task in filter(None, task_keys)]
+
+  if body:
+    updated_description = list(
+        set(description + [item.strip() for item in body.split('\n')]))
+  else:
+    updated_description = description
+  updated_description.sort()
+
+  return '\n'.join(updated_description).strip()
+
+
 def get_pr_commits(
     *,
     pr: PullRequest,
-) -> list[str] or tuple[None, str]:
+) -> list[str]:
   """
   Get all commits from PR to a list if there are many, or str if there is one. 
   Args:
     pr: github PullRequest object.
   Returns:
     List of all current PR`s commits.
-    Or one PR commit.
-    Or tuple with error if parsing fails.
   """
-  try:
-    task_key = list(
-        {
-            re.match(r'[^[]*\[([^]]*)\]', commit.commit.message).groups()[0]
-            for commit in pr.get_commits()
-        }
-    )
-  except AttributeError:
-    task_key = None, 'Cannot parse task key from commit: expect example "Commit message [RI-1]" where [RI-1] is the task number, or specify TASKS in action'
+  commits = []
 
-  return task_key
+  for commit in pr.get_commits():
+    try:
+      commits.append(re.match(r'[^[]*\[([^]]*)\]',
+                     commit.commit.message).groups()[0])
+    except AttributeError:
+      continue
+
+  return commits
 
 
 def set_pr_body(
@@ -41,9 +65,11 @@ def set_pr_body(
     task_key: list of Yandex tracker task keys.
     pr: github PullRequest object.
   """
+
   # TODO check if description with task url already exists
-  pr.edit(body='\n'.join(
-      [f'https://tracker.yandex.ru/{task}' for task in task_keys]))
+  description = _prepare_description(task_keys=task_keys, pr=pr)
+
+  pr.edit(body=description)
 
 
 def check_if_pr(
@@ -60,5 +86,5 @@ def check_if_pr(
   try:
     data['pull_request']
   except KeyError:
-    print('Sorry! You can use this action only on Pull Request')
+    print('[SKIPPING] You can use this action only on Pull Request')
     sys.exit(1)
