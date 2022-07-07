@@ -4,9 +4,9 @@ from environs import Env
 from github import Github
 
 from helpers.github import (
-    check_if_pr,
-    get_pr_commits,
-    set_pr_body,
+  check_if_pr,
+  get_pr_commits,
+  set_pr_body,
 )
 from helpers.yandex import move_task
 
@@ -33,8 +33,11 @@ check_if_pr(data=data)
 pr_number = data['pull_request']['number']
 pr = repo.get_pull(number=int(pr_number))
 
-TASK_KEYS = get_pr_commits(pr=pr) if not TASK_KEYS else TASK_KEYS.split(',')
+commits = get_pr_commits(pr=pr)
+
 IGNORE_TASKS = [] if not IGNORE_TASKS else IGNORE_TASKS.split(',')
+
+TASK_KEYS = list(set(TASK_KEYS.split(',') + commits))
 
 set_pr_body(task_keys=TASK_KEYS, pr=pr)
 
@@ -42,13 +45,13 @@ if not data['pull_request']['merged'] and data['pull_request']['state'] == 'open
 
   TO = 'in_review' if not TO else TO
 
-  available_statuses, task_done = move_task(
-      ignore_tasks=IGNORE_TASKS,
-      org_id=YANDEX_ORG_ID,
-      pr=pr,
-      task_keys=TASK_KEYS,
-      to=TO,
-      token=YANDEX_OAUTH2_TOKEN
+  statuses = move_task(
+    ignore_tasks=IGNORE_TASKS,
+    org_id=YANDEX_ORG_ID,
+    pr=pr,
+    task_keys=TASK_KEYS,
+    to=TO,
+    token=YANDEX_OAUTH2_TOKEN
   )
 
 elif data['pull_request']['merged'] and data['pull_request']['state'] == 'closed':
@@ -56,21 +59,13 @@ elif data['pull_request']['merged'] and data['pull_request']['state'] == 'closed
   # TODO think about hardcode
   TO = 'resolve' if not TO else TO
 
-  available_statuses, task_done = move_task(
-      ignore_tasks=IGNORE_TASKS,
-      org_id=YANDEX_ORG_ID,
-      pr=pr,
-      task_keys=TASK_KEYS,
-      to=TO,
-      token=YANDEX_OAUTH2_TOKEN
+  statuses = move_task(
+    ignore_tasks=IGNORE_TASKS,
+    org_id=YANDEX_ORG_ID,
+    pr=pr,
+    task_keys=TASK_KEYS,
+    to=TO,
+    token=YANDEX_OAUTH2_TOKEN
   )
 
-print(
-    f'AVAILABLE_STATUSES: {available_statuses}',
-    f'TASK_DONE: {task_done}',
-    f'TASK_KEYS: {TASK_KEYS}',
-    f'IGNORE: {IGNORE_TASKS}',
-    f'TO: {TO}',
-    f'TASK_URL: {TASK_URL}',
-    sep='\n'
-)
+print(statuses, f'TRANSITION: {TO}', sep='\n')
