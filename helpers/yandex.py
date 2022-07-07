@@ -1,7 +1,31 @@
-import sys
-
 import requests
 from github.PullRequest import PullRequest
+
+
+def _format_output(
+    *,
+    to: str,
+    statuses: dict[str, dict[str, str]],
+) -> str:
+  """
+  Build human readable message output.
+  Args:
+    to: Desired task transition.
+    statuses: All available statuses for the task.
+  Returns:
+    Message that will be displayed in action job.
+  """
+  output = ''
+
+  for k, v in statuses.items():
+    if v and to not in v:
+      output += f'{k} NOTHING TO DO. AVAILABLE TRANSITIONS IS: {v}\n'
+    elif not v:
+      output += f'WARNING! TASK {k} NOT FOUND\n'
+    else:
+     output += f'{k} TASK UPDATED \n'
+
+  return output
 
 
 def _get_all_transitions(
@@ -20,47 +44,38 @@ def _get_all_transitions(
     task_key: Yandex tracker task key.
   Returns:
     Response from Yandex Tracker API in dict.
-  Raises:
-    System error exit code 1 if task not exists.	
   """
 
   statuses = {}
-  if list(set(task_keys) - set(ignore_tasks)):
-    for task_key in task_keys:
-      statuses[task_key] = requests.get(
+  tasks = list(set(task_keys) - set(ignore_tasks))
+
+  if tasks:
+    for task in filter(None, tasks):
+      statuses[task] = requests.get(
           headers={
               'Authorization': f'OAuth {token}',
               'X-Org-ID': f'{org_id}',
               'Content-Type': 'application/json',
           },
-          url=f'https://api.tracker.yandex.net/v2/issues/{task_key}/transitions'
+          url=f'https://api.tracker.yandex.net/v2/issues/{task}/transitions'
       ).json()
 
-  try:
-    {
-        k: {
-            i['id']: i['display'] for i in v
-        } for (k, v) in statuses.items()
-    }
-  except TypeError:
-    print(statuses)
-    return sys.exit(1)
-  else:
-    return {
-        k: {
-            i['id']: i['display'] for i in v
-        } for (k, v) in statuses.items()
-    }
+  return {
+      k: {
+          i['id']: i['display'] for i in v
+          if 'id' and 'display' in i
+      } for (k, v) in statuses.items()
+  }
 
 
 def move_task(*,
-              org_id: str,
-              to: str,
-              token: str,
-              ignore_tasks: list[str],
-              task_keys: list[str],
-              pr: PullRequest,
-              ) -> tuple[dict[str, str], dict[str, str] or str]:
+  org_id: str,
+  to: str,
+  token: str,
+  ignore_tasks: list[str],
+  task_keys: list[str],
+  pr: PullRequest,
+) -> str:
   """
   Change task transition.
   Args:
@@ -71,14 +86,10 @@ def move_task(*,
     to: The name of the transition where to move the task.
     token: Yandex OAUTH2 token.
   Returns:
-    All available transition statuses and full response from Yandex Tracker API
-    in json format. If the task is already in the wanted state, this returns the message DO NOTHING
-    instead of an API response.
+    Message that will be displayed in action job output.
   """
   statuses = _get_all_transitions(
       ignore_tasks=ignore_tasks, org_id=org_id, task_keys=task_keys, token=token)
-
-  job = 'NOTHING TO DO'
 
   response = {}
 
@@ -94,6 +105,9 @@ def move_task(*,
             url=f'https://api.tracker.yandex.net/v2/issues/{k}/transitions/{a}/_execute',
             json={'comment': f'Task moved to "{b}"'}
         ).json())
-      pr.create_issue_comment(body=f'Task moved to "{b}" :rocket:')
+        pr.create_issue_comment(
+            body=f'Task **{k}** moved to **"{b}"** :rocket:')
 
-  return statuses, job if not response else response
+  statuses = _format_output(to=to, statuses=statuses)
+
+  return statuses
