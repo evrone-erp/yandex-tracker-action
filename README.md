@@ -10,6 +10,12 @@ If there are multiple commits with different task keys in the pull request, they
 
 It is also possible to specify multiple tasks in an action. See documentation below.
 
+All task keys will be collected, both specified in the action and found in the commits.
+
+If the task key is not found in the tracker, you will receive a warning, but the tasks found will be processed.
+
+If the task has nowhere to move or it is already in the desired status, a message will be displayed.
+
 Please be free to any issue.
 ## Usage
 
@@ -18,11 +24,44 @@ Please be free to any issue.
 By default, commit messages such as "[RI-1] awesome-feature" will be parsed, where "RI-1" will be the feature key. You can specify a specific task key. You can use the logic from the previous job step.
 
 ```yaml
-- uses: evrone-erp/yandex-tracker-action@v1
-  with:
-    token: ${{secrets.GITHUB_TOKEN}}
-    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
-    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+name: YC Tracker
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+
+jobs:
+ transit-tasks:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Move Task When PR Opened
+        if: github.event.action != 'closed'
+        uses: evrone-erp/yandex-tracker-action@v1
+        with:
+          token: ${{secrets.GITHUB_TOKEN}}
+          yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+          yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+          task_url: true
+          ignore: ERP-31,ERP-32
+
+      - name: Move Task When PR Merged
+        if: github.event.pull_request.merged == true
+        uses: evrone-erp/yandex-tracker-action@v1
+        with:
+          token: ${{secrets.GITHUB_TOKEN}}
+          yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+          yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+          task_url: true
+          ignore: ERP-31,ERP-32
 ```
 
  ### Add specific task key
@@ -64,7 +103,7 @@ If true - a comment will be set to the current PR with the task address of the f
     task_url: true
 ```
 
-### In what state move the task
+### Get all available transitions
 
 By default, if the PR is open, the task will go into the `in_review` state. If the PRs are merged, the state is `resolve`. You can specify a *human readable name* or endpoint name.
 
@@ -137,5 +176,6 @@ You can move an issue when opening a PR and when merging a PR into different tra
 ### `yandex_org_id`
 
 **Required** ID of organization registerd in Yandex Tracker.
+
 
 [<img src="https://evrone.com/logo/evrone-sponsored-logo.png" width=231>](https://evrone.com/?utm_source=evrone-django-template)
