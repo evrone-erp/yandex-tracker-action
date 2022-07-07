@@ -198,3 +198,5 @@ jobs:
 - yandex_oauth2_token: OAUTH2 токен для выполнения запросов к трекеру Яндекс
 
 [Документация по получению OAUTH2 токена от Яндекс](https://yandex.ru/dev/id/doc/dg/oauth/concepts/about.html)
+
+[<img src="https://evrone.com/logo/evrone-sponsored-logo.png" width=231>](https://evrone.com/?utm_source=evrone-django-template)
