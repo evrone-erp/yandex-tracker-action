@@ -28,6 +28,40 @@ def _format_output(
   return output
 
 
+def task_exists(
+  *,
+  org_id: str,
+  tasks: list[str],
+  token: str,
+) -> list[str]:
+  """
+  Get Yandex API with task keys. If task does not exist, remove from list.
+  Args:
+    org_id: Registered organization in Yandex Tracker.
+    tasks: All collected tracker tasks.
+    token: Yandex Tracker OAUTH2 token.
+  Returns:
+    List of all valid tasks.
+  """
+  tasks = filter(None, tasks)
+  existing_tasks = {}
+
+  for task in tasks:
+    existing_tasks[task] = requests.get(
+      headers={
+        'Authorization': f'OAuth {token}',
+        'X-Org-ID': f'{org_id}',
+        'Content-Type': 'application/json',
+      },
+      url=f'https://api.tracker.yandex.net/v2/issues/{task}'
+    ).json()
+
+  return [
+    k for (k, v) in existing_tasks.items()
+    if 'errors' not in v
+  ]
+
+
 def _get_all_transitions(
   *,
   org_id: str,
@@ -61,10 +95,10 @@ def _get_all_transitions(
       ).json()
 
   return {
-      k: {
-        i['id']: i['display'] for i in v
-        if 'id' and 'display' in i
-      } for (k, v) in statuses.items()
+    k: {
+      i['id']: i['display'] for i in v
+      if 'id' and 'display' in i
+    } for (k, v) in statuses.items()
   }
 
 

@@ -1,5 +1,6 @@
 import re
 import sys
+from typing import Optional
 
 from github.PullRequest import PullRequest
 
@@ -8,28 +9,26 @@ def _prepare_description(
   *,
   task_keys: list[str],
   pr: PullRequest,
-) -> str:
+) -> Optional[str]:
   """
   Update existing PR description with links to the task keys.
   Args:
     task_keys: List of the Yandex tracker tasks from action.
     pr: github PullRequest object.
   Return:
-    Desctiption in string format separated with new line.
+    Desctiption in string format if exists or None.
   """
   body = pr.body
-  description = [
+  links = [
     f'https://tracker.yandex.ru/{task}' for task in filter(None, task_keys)]
 
   if body:
-    updated_description = list(
-      set(description + [item.strip() for item in body.split('\n')]))
+    updated_links = ''.join(
+      sorted(list(set([item for item in links]) - set([item.strip() for item in body.split('\n')]))))
+    description = updated_links + '\n' + body
   else:
-    updated_description = description
-  
-  updated_description.sort()
-
-  return '\n'.join(updated_description).strip()
+    description = '\n'.join(sorted(list([item for item in links])))
+  return description
 
 
 def get_pr_commits(
@@ -47,8 +46,7 @@ def get_pr_commits(
 
   for commit in pr.get_commits():
     try:
-      commits.append(re.match(r'[^[]*\[([^]]*)\]',
-                     commit.commit.message).groups()[0])
+      commits.append(re.match(r'[^[]*\[([^]]*)\]', commit.commit.message).groups()[0])
     except AttributeError:
       continue
 
@@ -66,11 +64,9 @@ def set_pr_body(
     task_key: list of Yandex tracker task keys.
     pr: github PullRequest object.
   """
-
-  # TODO check if description with task url already exists
   description = _prepare_description(task_keys=task_keys, pr=pr)
-
-  pr.edit(body=description)
+  if description:
+    pr.edit(body=description)
 
 
 def check_if_pr(

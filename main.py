@@ -1,4 +1,5 @@
 import json
+import sys
 
 from environs import Env
 from github import Github
@@ -8,7 +9,10 @@ from helpers.github import (
   get_pr_commits,
   set_pr_body,
 )
-from helpers.yandex import move_task
+from helpers.yandex import (
+  move_task,
+  task_exists,
+)
 
 
 env = Env()
@@ -39,7 +43,13 @@ IGNORE_TASKS = [] if not IGNORE_TASKS else IGNORE_TASKS.split(',')
 
 TASK_KEYS = list(set(TASK_KEYS.split(',') + commits))
 
-set_pr_body(task_keys=TASK_KEYS, pr=pr)
+if any(TASK_KEYS):
+  existing_tasks = task_exists(org_id=YANDEX_ORG_ID, tasks=TASK_KEYS, token=YANDEX_OAUTH2_TOKEN)
+else:
+  print('[SKIPPING] No tasks found!')
+  sys.exit(0)
+
+set_pr_body(task_keys=existing_tasks, pr=pr)
 
 if not data['pull_request']['merged'] and data['pull_request']['state'] == 'open':
 
