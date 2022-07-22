@@ -2,13 +2,15 @@
 
 [RUS](https://github.com/evrone-erp/yandex-tracker-action/blob/master/README_RUS.md)
 
-This action allows you to automatically move tasks on the board. Move the task on Yandex Tracker board.
+This action allows you to automatically move tasks on the board.
 
-By default, it parses commits of the form `"[RI-1] implement something"` and takes the task number, which in this case is `RI-1`.
+Move the task at Yandex Tracker board.
 
-You can also set tasks directly in the action, for example, by specifying the output from previous job.
+By default, it parses commits of the form "[RI-1] implement something" and takes the task number, which in this case is RI-1.
 
-If there are multiple commits with different task keys in the pull request, they will both be moved on the board.
+You can also set tasks directly in the action, for example, by specifying the output from the previous job.
+
+If there are multiple commits with different task keys in the pull request, they will all be moved on the board.
 
 It is also possible to specify multiple tasks in an action. See documentation below.
 
@@ -18,12 +20,12 @@ If the task key is not found in the tracker, you will receive a warning, but the
 
 If the task has nowhere to move or it is already in the desired status, a message will be displayed.
 
-Please be free to any issue.
+Please feel free to report any issues.
 ## Usage
 
 ### Basic
 
-By default, commit messages such as "[RI-1] awesome-feature" will be parsed, where "RI-1" will be the feature key. You can specify a specific task key. You can use the logic from the previous job step.
+By default, commit messages such as `"[RI-1] awesome-feature"` will be parsed, where `"RI-1"` will be the feature key. You can specify a specific task key. You can also use the logic from the previous job step.
 
 ```yaml
 name: YC Tracker
@@ -68,7 +70,7 @@ jobs:
 
  ### Add specific task key
 
-You can specify task numbers separated by commas.
+You can specify task numbers, separated by commas.
 
 ````yaml
 - uses: evrone-erp/yandex-tracker-action@v1
@@ -81,7 +83,7 @@ You can specify task numbers separated by commas.
 
 ### Add ignore tasks
 
-You may need to ignore some long lifecycle tasks. Add tasks separeted by comma.If you have long-running tasks that you do not want to automatically move, then you can ignore them.
+You may need to ignore some long lifecycle tasks. Add tasks, separated by commas. If you have long-running tasks that you do not want to automatically move, then you can ignore them.
 
 ````yaml
 - uses: evrone-erp/yandex-tracker-action@v1
@@ -94,7 +96,7 @@ You may need to ignore some long lifecycle tasks. Add tasks separeted by comma.I
 
 ### Comment PR with task url
 
-If true - a comment will be set to the current PR with the task address of the form <https://tracker.yandex.ru/TASK_KEY> in the PR description
+If true — a comment will be set to the current PR with the task address of the form <https://tracker.yandex.ru/TASK_KEY> in the PR description.
 
 ```yaml
 - uses: evrone-erp/yandex-tracker-action@v1
@@ -109,13 +111,14 @@ If true - a comment will be set to the current PR with the task address of the f
 
 By default, if the PR is open, the task will go into the `in_review` state. If the PRs are merged, the state is `resolve`. You can specify a *human readable name* or endpoint name.
 
+
 Get all available states:
 
 ```shell
 curl -H "Authorization: OAuth <oauth2-token>" -H "X-Org-ID: <org-id>" -H "Content-Type: application/json" https://api.tracker.yandex.net/v2/issues/<task-key>/transitions | jq ".[].id"
 ```
 
-Also you can see output of the action and find these states there.
+See output of the action and find states:
 
 ```yaml
 - uses: evrone-erp/yandex-tracker-action@v1
@@ -126,7 +129,7 @@ Also you can see output of the action and find these states there.
     to: 'На ревью' # or 'in_review'
 ```
 
-### One move if PR is opened and one move if is merged
+### One move if PR is opened and one move if it is merged
 
 You can move an issue when opening a PR and when merging a PR into different transitions. See default state names above.
 
@@ -153,7 +156,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 
 ### `ignore`
 
-**Optional** Ignored tasks separated by comma.
+**Optional** Ignored tasks separated by commas.
 
 ### `tasks`
 
@@ -165,7 +168,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 
 ### `to`
 
-**Optional** Specify where you want to move the task. The default is `in_review` for open PRs and `resolve` for merged PRs.
+**Optional** Specify where you want to move the task. The default is `in_review` **for open PRs and `resolve` for merged PRs**.
 
 ### `token`
 
@@ -177,7 +180,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 
 ### `yandex_org_id`
 
-**Required** ID of organization registerd in Yandex Tracker.
+**Required** ID of organization registered in Yandex Tracker.
 
 
 [<img src="https://evrone.com/logo/evrone-sponsored-logo.png" width=231>](https://evrone.com/?utm_source=evrone-django-template)
