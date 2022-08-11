@@ -199,4 +199,6 @@ jobs:
 
 [Документация по получению OAUTH2 токена от Яндекс](https://yandex.ru/dev/id/doc/dg/oauth/concepts/about.html)
 
+[yandex-tracker-action](https://evrone.com/yandex-tracker-action?utm_source=github&utm_medium=yandex-tracker-action) проект создан и поддержан [Evrone](https://evrone.com/?utm_source=github&utm_medium=yandex-tracker-action)
+
 [<img src="https://evrone.com/logo/evrone-sponsored-logo.png" width=231>](https://evrone.com/?utm_source=evrone-django-template)

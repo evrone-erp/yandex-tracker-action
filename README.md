@@ -183,4 +183,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 **Required** ID of organization registered in Yandex Tracker.
 
 
+[yandex-tracker-action](https://evrone.com/yandex-tracker-action?utm_source=github&utm_medium=yandex-tracker-action) project is created & supported by [Evrone](https://evrone.com/?utm_source=github&utm_medium=yandex-tracker-action)
+
+
 [<img src="https://evrone.com/logo/evrone-sponsored-logo.png" width=231>](https://evrone.com/?utm_source=evrone-django-template)
