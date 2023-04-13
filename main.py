@@ -53,7 +53,7 @@ set_pr_body(task_keys=existing_tasks, pr=pr)
 
 if not data['pull_request']['merged'] and data['pull_request']['state'] == 'open':
 
-  TO = 'in_review' if not TO else TO
+  TO = 'In Review' if not TO else TO
 
   statuses = move_task(
     ignore_tasks=IGNORE_TASKS,
