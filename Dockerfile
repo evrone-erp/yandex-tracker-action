@@ -1,15 +1,16 @@
-FROM python:3.9-alpine
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-COPY requirements.txt .
-
-RUN set -ex; \
-  pip install --upgrade pip; \
-  pip install -r requirements.txt
+RUN apt-get update \
+    && pip install --upgrade --no-cache-dir pip \
+    && pip install --upgrade --no-cache-dir wheel \
+    && pip install --upgrade --no-cache-dir setuptools
 
 COPY . .
 
+RUN pip install -r requirements.txt
+
 ENTRYPOINT [ "/entrypoint.sh" ]
-CMD ["python", "/main.py"]
+CMD [ "python", "/main.py" ]

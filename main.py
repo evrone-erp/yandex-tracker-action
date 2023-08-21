@@ -1,81 +1,92 @@
 import json
+import logging
 import sys
 
 from environs import Env
 from github import Github
 
-from helpers.github import (
-  check_if_pr,
-  get_pr_commits,
-  set_pr_body,
-)
-from helpers.yandex import (
-  move_task,
-  task_exists,
-)
-
+from helpers.github import check_if_pr, get_pr_commits, set_pr_body
+from helpers.yandex import move_task, task_exists
 
 env = Env()
 
-GITHUB_TOKEN = env('INPUT_TOKEN')
-GITHUB_REPOSITORY = env('GITHUB_REPOSITORY')
-TASK_URL = env.bool('INPUT_TASK_URL', False)
-TASK_KEYS = env('INPUT_TASKS', '')
-TO = env('INPUT_TO', '')
-YANDEX_ORG_ID = env('INPUT_YANDEX_ORG_ID')
-YANDEX_OAUTH2_TOKEN = env('INPUT_YANDEX_OAUTH2_TOKEN')
-IGNORE_TASKS = env('INPUT_IGNORE', '')
+REVIEW_STATUS = "in_review"
+RESOLVE_STATUS = "resolve"
+PR_OPEN_STATUS = "open"
+PR_CLOSED_STATUS = "closed"
 
-github = Github(GITHUB_TOKEN)
-repo = github.get_repo(GITHUB_REPOSITORY)
+GITHUB_TOKEN = env("INPUT_TOKEN")
+GITHUB_EVENT_PATH = env("GITHUB_EVENT_PATH")
+GITHUB_REPOSITORY = env("GITHUB_REPOSITORY")
+TASK_URL = env.bool("INPUT_TASK_URL", False)
+TASK_KEYS = env("INPUT_TASKS", "")
+TARGET_STATUS = env("INPUT_TO", "")
+YANDEX_ORG_ID = env("INPUT_YANDEX_ORG_ID")
+YANDEX_OAUTH2_TOKEN = env("INPUT_YANDEX_OAUTH2_TOKEN")
+IGNORE_TASKS = env("INPUT_IGNORE", "")
+IGNORE_TASKS = [] if not IGNORE_TASKS else IGNORE_TASKS.split(",")
 
-with open(env('GITHUB_EVENT_PATH', 'r')) as f:
-  data = json.load(f)
+logger = logging.getLogger(__name__)
 
-check_if_pr(data=data)
 
-pr_number = data['pull_request']['number']
-pr = repo.get_pull(number=int(pr_number))
+if __name__ == "__main__":
 
-commits = get_pr_commits(pr=pr)
+    logging.basicConfig(
+        stream=sys.stdout,
+        format="%(levelname)8s | %(asctime)s | %(message)s",
+        datefmt="%H:%M:%S",
+        level=logging.INFO,
+        force=True,
+    )
 
-IGNORE_TASKS = [] if not IGNORE_TASKS else IGNORE_TASKS.split(',')
+    with open(GITHUB_EVENT_PATH, "r", encoding="utf8") as f:
+        data = json.load(f)
 
-TASK_KEYS = list(set(TASK_KEYS.split(',') + commits))
+    check_if_pr(data=data)
 
-if any(TASK_KEYS):
-  existing_tasks = task_exists(org_id=YANDEX_ORG_ID, tasks=TASK_KEYS, token=YANDEX_OAUTH2_TOKEN)
-else:
-  print('[SKIPPING] No tasks found!')
-  sys.exit(0)
+    github = Github(GITHUB_TOKEN)
+    repo = github.get_repo(GITHUB_REPOSITORY)
+    pr = repo.get_pull(number=int(data["pull_request"]["number"]))
+    commits = get_pr_commits(pr=pr)
+    task_keys = list(set(TASK_KEYS.split(",") + commits))
 
-set_pr_body(task_keys=existing_tasks, pr=pr)
+    if any(task_keys):
+        existing_tasks = task_exists(
+            org_id=YANDEX_ORG_ID,
+            tasks=task_keys,
+            token=YANDEX_OAUTH2_TOKEN,
+        )
+    else:
+        logger.warning("[SKIPPED] No tasks found!")
+        sys.exit(0)
 
-if not data['pull_request']['merged'] and data['pull_request']['state'] == 'open':
+    set_pr_body(task_keys=existing_tasks, pr=pr)
 
-  TO = 'in_review' if not TO else TO
+    if TARGET_STATUS:
+        target_status = TARGET_STATUS
+    elif (
+        not data["pull_request"]["merged"]
+        and data["pull_request"]["state"] == PR_OPEN_STATUS
+    ):
+        target_status = REVIEW_STATUS
+    elif (
+        data["pull_request"]["merged"]
+        and data["pull_request"]["state"] == PR_CLOSED_STATUS
+    ):
+        target_status = RESOLVE_STATUS
+    else:
+        target_status = None
 
-  statuses = move_task(
-    ignore_tasks=IGNORE_TASKS,
-    org_id=YANDEX_ORG_ID,
-    pr=pr,
-    task_keys=TASK_KEYS,
-    to=TO,
-    token=YANDEX_OAUTH2_TOKEN
-  )
-
-elif data['pull_request']['merged'] and data['pull_request']['state'] == 'closed':
-
-  # TODO think about hardcode
-  TO = 'resolve' if not TO else TO
-
-  statuses = move_task(
-    ignore_tasks=IGNORE_TASKS,
-    org_id=YANDEX_ORG_ID,
-    pr=pr,
-    task_keys=TASK_KEYS,
-    to=TO,
-    token=YANDEX_OAUTH2_TOKEN
-  )
-
-print(statuses, f'TRANSITION: {TO}', sep='\n')
+    if target_status:
+        statuses = move_task(
+            ignore_tasks=IGNORE_TASKS,
+            org_id=YANDEX_ORG_ID,
+            pr=pr,
+            task_keys=task_keys,
+            target_status=target_status,
+            token=YANDEX_OAUTH2_TOKEN,
+        )
+        logger.info("Transition: %r", TARGET_STATUS)
+        logger.info("Statuses: %r", statuses)
+    else:
+        logger.warning("No transition")

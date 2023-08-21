@@ -1,146 +1,161 @@
+import logging
+from http import HTTPStatus
+
 import requests
 from github.PullRequest import PullRequest
 
+_REQUEST_TIMEOUT = 300.0
+
+logger = logging.getLogger(__name__)
+
 
 def _format_output(
-  *,
-  to: str,
-  statuses: dict[str, dict[str, str]],
+    *,
+    target_status: str,
+    statuses: dict[str, dict[str, str]],
 ) -> str:
-  """
-  Build human readable message output.
-  Args:
-    to: Desired task transition.
-    statuses: All available statuses for the task.
-  Returns:
-    Message that will be displayed in action job.
-  """
-  output = ''
+    """
+    Build human-readable message output.
+    Args:
+      target_status: Desired task transition.
+      statuses: All available statuses for the task.
+    Returns:
+      Message that will be displayed in an action job.
+    """
+    output = ""
 
-  for k, v in statuses.items():
-    if v and to not in v:
-      output += f'{k} NOTHING TO DO. AVAILABLE TRANSITIONS IS: {v}\n'
-    elif not v:
-      output += f'WARNING! TASK {k} NOT FOUND\n'
-    else:
-     output += f'{k} TASK UPDATED \n'
+    for k, v in statuses.items():
+        if v and target_status not in v:
+            output += f"{k}: nothing to do. Available transitions is: {v}; "
+        elif not v:
+            output += f"{k}: WARNING! Task not found; "
+        else:
+            output += f"{k}: updated; "
 
-  return output
+    return output
 
 
 def task_exists(
-  *,
-  org_id: str,
-  tasks: list[str],
-  token: str,
+    *,
+    org_id: str,
+    tasks: list[str],
+    token: str,
 ) -> list[str]:
-  """
-  Get Yandex API with task keys. If task does not exist, remove from list.
-  Args:
-    org_id: Registered organization in Yandex Tracker.
-    tasks: All collected tracker tasks.
-    token: Yandex Tracker OAUTH2 token.
-  Returns:
-    List of all valid tasks.
-  """
-  tasks = filter(None, tasks)
-  existing_tasks = {}
+    """
+    Get Yandex API with task keys. If a task does not exist, remove from a list.
+    Args:
+      org_id: Registered organization in Yandex Tracker.
+      tasks: All collected tracker tasks.
+      token: Yandex Tracker IAM token.
+    Returns:
+      List of all valid tasks.
+    """
+    filtered_tasks = filter(None, tasks)
+    existing_tasks = {}
 
-  for task in tasks:
-    existing_tasks[task] = requests.get(
-      headers={
-        'Authorization': f'OAuth {token}',
-        'X-Org-ID': f'{org_id}',
-        'Content-Type': 'application/json',
-      },
-      url=f'https://api.tracker.yandex.net/v2/issues/{task}'
-    ).json()
+    for task in filtered_tasks:
+        existing_tasks[task] = requests.get(
+            headers={
+                "Authorization": f"Bearer {token}",
+                "X-Org-ID": org_id,
+                "Content-Type": "application/json",
+            },
+            url=f"https://api.tracker.yandex.net/v2/issues/{task}",
+            timeout=_REQUEST_TIMEOUT,
+        ).json()
 
-  return [
-    k for (k, v) in existing_tasks.items()
-    if 'errors' not in v
-  ]
+    return [k for (k, v) in existing_tasks.items() if "errors" not in v]
 
 
 def _get_all_transitions(
-  *,
-  org_id: str,
-  token: str,
-  ignore_tasks: list[str],
-  task_keys: list[str],
+    *,
+    org_id: str,
+    token: str,
+    ignore_tasks: list[str],
+    task_keys: list[str],
 ) -> dict[str, dict[str, str]]:
-  """
-  Fetch all available task transitions.
-  Args:
-    ignore_tasks: list of tasks to ignore.
-    token: Yandex OAUTH2 token.
-    org_id: Yandex organization ID.
-    task_key: Yandex tracker task key.
-  Returns:
-    Response from Yandex Tracker API in dict.
-  """
+    """
+    Fetch all available task transitions.
+    Args:
+      ignore_tasks: list of tasks to ignore.
+      token: Yandex IAM token.
+      org_id: Yandex organization ID.
+      task_keys: Yandex tracker task key.
+    Returns:
+      Response from Yandex Tracker API in dict.
+    """
+    statuses = {}
+    tasks = list(set(task_keys) - set(ignore_tasks))
 
-  statuses = {}
-  tasks = list(set(task_keys) - set(ignore_tasks))
+    if tasks:
+        for task in filter(None, tasks):
+            response = requests.get(
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "X-Org-ID": org_id,
+                    "Content-Type": "application/json",
+                },
+                url=f"https://api.tracker.yandex.net/v2/issues/{task}/transitions",
+                timeout=_REQUEST_TIMEOUT,
+            )
+            if response.status_code != HTTPStatus.OK:
+                logger.warning("[SKIPPING] %s has error: %s", task, response.text)
+                continue
 
-  if tasks:
-    for task in filter(None, tasks):
-      statuses[task] = requests.get(
-        headers={
-          'Authorization': f'OAuth {token}',
-          'X-Org-ID': f'{org_id}',
-          'Content-Type': 'application/json',
-        },
-        url=f'https://api.tracker.yandex.net/v2/issues/{task}/transitions'
-      ).json()
+            statuses[task] = response.json()
 
-  return {
-    k: {
-      i['id']: i['display'] for i in v
-      if 'id' and 'display' in i
-    } for (k, v) in statuses.items()
-  }
+    return {
+        task_key: {
+            data["id"]: data["display"]
+            for data in response_info
+            if "id" in data and "display" in data
+        }
+        for (task_key, response_info) in statuses.items()
+    }
 
 
-def move_task(*,
-  org_id: str,
-  to: str,
-  token: str,
-  ignore_tasks: list[str],
-  task_keys: list[str],
-  pr: PullRequest,
+def move_task(
+    *,
+    org_id: str,
+    target_status: str,
+    token: str,
+    ignore_tasks: list[str],
+    task_keys: list[str],
+    pr: PullRequest,
 ) -> str:
-  """
-  Change task transition.
-  Args:
-    ignore_tasks: list of tasks to ignore.
-    org_id: str. Yandex organization ID.
-    pr: github PullRequest object.
-    task_key: List of task keys.
-    to: The name of the transition where to move the task.
-    token: Yandex OAUTH2 token.
-  Returns:
-    Message that will be displayed in action job output.
-  """
-  statuses = _get_all_transitions(
-    ignore_tasks=ignore_tasks, org_id=org_id, task_keys=task_keys, token=token)
+    """
+    Change task transition.
+    Args:
+      ignore_tasks: list of tasks to ignore.
+      org_id: str. Yandex's organization ID.
+      pr: GitHub PullRequest object.
+      task_keys: List of task keys.
+      target_status: The name of the transition where to move the task.
+      token: Yandex IAM token.
+    Returns:
+      Message that will be displayed in action job output.
+    """
+    transition_statuses = _get_all_transitions(
+        ignore_tasks=ignore_tasks, org_id=org_id, task_keys=task_keys, token=token
+    )
 
-  response = {}
+    response = {}
+    for k, v in transition_statuses.items():
+        for a, b in v.items():
+            if target_status in a or target_status in b:
+                response[k] = requests.post(
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "X-Org-ID": org_id,
+                        "Content-Type": "application/json",
+                    },
+                    url=f"https://api.tracker.yandex.net/v2/issues/{k}/transitions/{a}/_execute",
+                    json={"comment": f'Task moved to "{b}"'},
+                    timeout=_REQUEST_TIMEOUT,
+                ).json()
+                pr.create_issue_comment(
+                    body=f'Task **{k}** moved to **"{b}"** :rocket:'
+                )
 
-  for k, v in statuses.items():
-    for a, b in v.items():
-      if to in a or to in b:
-        response[k] = (requests.post(
-          headers={
-            'Authorization': f'OAuth {token}',
-            'X-Org-ID': f'{org_id}',
-            'Content-Type': 'application/json',
-          },
-          url=f'https://api.tracker.yandex.net/v2/issues/{k}/transitions/{a}/_execute',
-          json={'comment': f'Task moved to "{b}"'}
-        ).json())
-        pr.create_issue_comment(body=f'Task **{k}** moved to **"{b}"** :rocket:')
-
-  statuses = _format_output(to=to, statuses=statuses)
-
-  return statuses
+    statuses = _format_output(target_status=target_status, statuses=transition_statuses)
+    return statuses
