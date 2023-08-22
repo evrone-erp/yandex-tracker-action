@@ -19,7 +19,7 @@ jobs:
         if: github.event.action != 'closed'
         uses: ./
         with:
-          token: ${{secrets.GITHUB_TOKEN}}
+          token: ${{ secrets.GITHUB_TOKEN }}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
           yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
           task_url: true
@@ -29,7 +29,7 @@ jobs:
         if: github.event.pull_request.merged == true
         uses: ./
         with:
-          token: ${{secrets.GITHUB_TOKEN}}
+          token: ${{ secrets.GITHUB_TOKEN }}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
           yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
           task_url: true
