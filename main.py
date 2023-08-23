@@ -6,7 +6,7 @@ from environs import Env
 from github import Github
 
 from helpers.github import check_if_pr, get_pr_commits, set_pr_body
-from helpers.yandex import move_task, task_exists
+from helpers.yandex import get_iam_token, move_task, task_exists
 
 env = Env()
 
@@ -49,12 +49,13 @@ if __name__ == "__main__":
     pr = repo.get_pull(number=int(data["pull_request"]["number"]))
     commits = get_pr_commits(pr=pr)
     task_keys = list(set(TASK_KEYS.split(",") + commits))
+    iam_token = get_iam_token(YANDEX_OAUTH2_TOKEN)
 
     if any(task_keys):
         existing_tasks = task_exists(
             org_id=YANDEX_ORG_ID,
             tasks=task_keys,
-            token=YANDEX_OAUTH2_TOKEN,
+            token=iam_token,
         )
     else:
         logger.warning("[SKIPPED] No tasks found!")
@@ -84,7 +85,7 @@ if __name__ == "__main__":
             pr=pr,
             task_keys=task_keys,
             target_status=target_status,
-            token=YANDEX_OAUTH2_TOKEN,
+            token=iam_token,
         )
         logger.info("Transition: %r", TARGET_STATUS)
         logger.info("Statuses: %r", statuses)

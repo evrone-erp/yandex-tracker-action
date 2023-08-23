@@ -176,8 +176,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 
 ### `yandex_oauth2_token`
 
-**Required** Yandex IAM token. You need to register an OAUTH2 application and then get a user token. 
-Get IAM token from API [here](https://cloud.yandex.ru/docs/iam/operations/iam-token/create).
+**Required** Yandex oauth2 token. You need to register an OAUTH2 application and then get a user token. [Documentation](https://yandex.ru/dev/id/doc/dg/oauth/concepts/about.html).
 
 ### `yandex_org_id`
 
