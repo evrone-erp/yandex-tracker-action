@@ -1,4 +1,5 @@
 import logging
+import sys
 from http import HTTPStatus
 
 import requests
@@ -159,3 +160,21 @@ def move_task(
 
     statuses = _format_output(target_status=target_status, statuses=transition_statuses)
     return statuses
+
+
+def get_iam_token(oauth_token: str) -> str:
+    response = requests.post(
+        headers={
+            "Content-Type": "application/json",
+        },
+        url="https://iam.api.cloud.yandex.net/iam/v1/tokens",
+        json={"yandexPassportOauthToken": oauth_token},
+        timeout=_REQUEST_TIMEOUT,
+    ).json()
+
+    iam_token = response.get("iamToken")
+    if not iam_token:
+        logger.warning("IAM token not found: %r", response)
+        sys.exit(1)
+
+    return iam_token
