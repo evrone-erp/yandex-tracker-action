@@ -10,4 +10,4 @@ lint:
 	PYTHONPATH=/ mypy --namespace-packages --show-error-codes . --check-untyped-defs --ignore-missing-imports --show-traceback
 
 safety:
-	safety check
+	safety check --policy-file .safety-policy.yml
