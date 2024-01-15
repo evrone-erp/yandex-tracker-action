@@ -4,6 +4,9 @@ good-names = i,j,k,v,a,b,ex,_,pk,x,y,to,id,tx,bo,kp,mcls,
 [FORMAT]
 max-line-length = 140
 
+[DESIGN]
+max-args = 7
+
 [MESSAGES CONTROL]
 # Only show warnings with the listed confidence levels. Leave empty to show
 # all. Valid levels: HIGH, INFERENCE, INFERENCE_FAILURE, UNDEFINED.

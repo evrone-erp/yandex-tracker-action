@@ -22,6 +22,7 @@ TASK_URL = env.bool("INPUT_TASK_URL", False)
 TASK_KEYS = env("INPUT_TASKS", "")
 TARGET_STATUS = env("INPUT_TO", "")
 YANDEX_ORG_ID = env("INPUT_YANDEX_ORG_ID")
+IS_YANDEX_CLOUD_ORG = env.bool("INPUT_IS_YANDEX_CLOUD_ORG", False)
 YANDEX_OAUTH2_TOKEN = env("INPUT_YANDEX_OAUTH2_TOKEN")
 IGNORE_TASKS = env("INPUT_IGNORE", "")
 IGNORE_TASKS = [] if not IGNORE_TASKS else IGNORE_TASKS.split(",")
@@ -54,6 +55,7 @@ if __name__ == "__main__":
     if any(task_keys):
         existing_tasks = task_exists(
             org_id=YANDEX_ORG_ID,
+            is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             tasks=task_keys,
             token=iam_token,
         )
@@ -82,6 +84,7 @@ if __name__ == "__main__":
         statuses = move_task(
             ignore_tasks=IGNORE_TASKS,
             org_id=YANDEX_ORG_ID,
+            is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             pr=pr,
             task_keys=task_keys,
             target_status=target_status,
