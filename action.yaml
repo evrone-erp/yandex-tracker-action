@@ -1,4 +1,4 @@
-name: Move Yandex Tracker Task On Board 
+name: Action with Yandex Tracker Tasks 
 description: This action help you to automate task progress on board
 inputs:
   ignore:
