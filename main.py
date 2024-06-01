@@ -6,7 +6,7 @@ from environs import Env
 from github import Github
 
 from helpers.github import check_if_pr, get_pr_commits, set_pr_body
-from helpers.yandex import comment_task, get_iam_token, move_task, task_exists
+from helpers.yandex import comment_task, move_task, task_exists
 
 env = Env()
 
@@ -18,7 +18,6 @@ TASK_KEYS = env("INPUT_TASKS", "")
 TARGET_STATUS = env("INPUT_TO", "")
 COMMENT = env("INPUT_COMMENT", "")
 YANDEX_ORG_ID = env("INPUT_YANDEX_ORG_ID")
-IS_YANDEX_CLOUD_ORG = env.bool("INPUT_IS_YANDEX_CLOUD_ORG", False)
 YANDEX_OAUTH2_TOKEN = env("INPUT_YANDEX_OAUTH2_TOKEN")
 IGNORE_TASKS = env("INPUT_IGNORE", "")
 IGNORE_TASKS = [] if not IGNORE_TASKS else IGNORE_TASKS.split(",")
@@ -45,14 +44,12 @@ if __name__ == "__main__":
     pr = repo.get_pull(number=int(data["pull_request"]["number"]))
     commits = get_pr_commits(pr=pr)
     task_keys = list(set(TASK_KEYS.split(",") + commits))
-    iam_token = get_iam_token(YANDEX_OAUTH2_TOKEN)
 
     if any(task_keys):
         existing_tasks = task_exists(
             org_id=YANDEX_ORG_ID,
-            is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             tasks=task_keys,
-            token=iam_token,
+            token=YANDEX_OAUTH2_TOKEN,
         )
     else:
         logger.warning("[SKIPPED] No tasks found!")
@@ -64,10 +61,9 @@ if __name__ == "__main__":
         commentResponse = comment_task(
             ignore_tasks=IGNORE_TASKS,
             org_id=YANDEX_ORG_ID,
-            is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             task_keys=task_keys,
             comment=COMMENT,
-            token=iam_token,
+            token=YANDEX_OAUTH2_TOKEN,
         )
         logger.info("Add comment response: %r", commentResponse)
     else:
@@ -77,11 +73,10 @@ if __name__ == "__main__":
         statuses = move_task(
             ignore_tasks=IGNORE_TASKS,
             org_id=YANDEX_ORG_ID,
-            is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             pr=pr,
             task_keys=task_keys,
             target_status=TARGET_STATUS,
-            token=iam_token,
+            token=YANDEX_OAUTH2_TOKEN,
         )
         logger.info("Transition: %r", TARGET_STATUS)
         logger.info("Statuses: %r", statuses)

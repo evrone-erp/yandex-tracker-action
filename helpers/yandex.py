@@ -39,7 +39,6 @@ def _format_output(
 def task_exists(
     *,
     org_id: str,
-    is_yandex_cloud_org: bool,
     tasks: list[str],
     token: str,
 ) -> list[str]:
@@ -47,7 +46,6 @@ def task_exists(
     Get Yandex API with task keys. If a task does not exist, remove from a list.
     Args:
       org_id: Registered organization in Yandex Tracker.
-      is_yandex_cloud_org: Yandex organization header definition ID flag.
       tasks: All collected tracker tasks.
       token: Yandex Tracker IAM token.
     Returns:
@@ -60,7 +58,7 @@ def task_exists(
         existing_tasks[task] = requests.get(
             headers={
                 "Authorization": f"Bearer {token}",
-                f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,
+                "X-Org-ID": org_id,
                 "Content-Type": "application/json",
             },
             url=f"https://api.tracker.yandex.net/v2/issues/{task}",
@@ -73,7 +71,6 @@ def task_exists(
 def _get_all_transitions(
     *,
     org_id: str,
-    is_yandex_cloud_org: bool,
     token: str,
     ignore_tasks: list[str],
     task_keys: list[str],
@@ -84,7 +81,6 @@ def _get_all_transitions(
       ignore_tasks: list of tasks to ignore.
       token: Yandex IAM token.
       org_id: Yandex organization ID.
-      is_yandex_cloud_org: Yandex organization header definition ID flag.
       task_keys: Yandex tracker task key.
     Returns:
       Response from Yandex Tracker API in dict.
@@ -97,7 +93,7 @@ def _get_all_transitions(
             response = requests.get(
                 headers={
                     "Authorization": f"Bearer {token}",
-                    f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,
+                    "X-Org-ID": org_id,
                     "Content-Type": "application/json",
                 },
                 url=f"https://api.tracker.yandex.net/v2/issues/{task}/transitions",
@@ -122,7 +118,6 @@ def _get_all_transitions(
 def move_task(
     *,
     org_id: str,
-    is_yandex_cloud_org: bool,
     target_status: str,
     token: str,
     ignore_tasks: list[str],
@@ -134,7 +129,6 @@ def move_task(
     Args:
       ignore_tasks: list of tasks to ignore.
       org_id: str. Yandex's organization ID.
-      is_yandex_cloud_org: Yandex organization header definition ID flag.
       pr: GitHub PullRequest object.
       task_keys: List of task keys.
       target_status: The name of the transition where to move the task.
@@ -145,7 +139,6 @@ def move_task(
     transition_statuses = _get_all_transitions(
         ignore_tasks=ignore_tasks,
         org_id=org_id,
-        is_yandex_cloud_org=is_yandex_cloud_org,
         task_keys=task_keys,
         token=token,
     )
@@ -157,7 +150,7 @@ def move_task(
                 response[k] = requests.post(
                     headers={
                         "Authorization": f"Bearer {token}",
-                        f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,
+                        "X-Org-ID": org_id,
                         "Content-Type": "application/json",
                     },
                     url=f"https://api.tracker.yandex.net/v2/issues/{k}/transitions/{a}/_execute",
@@ -175,7 +168,6 @@ def move_task(
 def comment_task(
     *,
     org_id: str,
-    is_yandex_cloud_org: bool,
     token: str,
     comment: str,
     ignore_tasks: list[str],
@@ -185,8 +177,6 @@ def comment_task(
     Add comment to task.
     Args:
       org_id: str. Yandex's organization ID.
-      is_yandex_cloud_org: Yandex organization header definition ID flag.
-      pr: GitHub PullRequest object.
       task_keys: List of task keys.
       comment: Task comment.
       token: Yandex IAM token.
@@ -202,7 +192,7 @@ def comment_task(
             response = requests.post(
                 headers={
                     "Authorization": f"Bearer {token}",
-                    f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,
+                    "X-Org-ID": org_id,
                     "Content-Type": "application/json",
                 },
                 url=f"https://api.tracker.yandex.net/v2/issues/{task}/comments",

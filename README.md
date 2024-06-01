@@ -52,7 +52,7 @@ jobs:
 
       - name: Move Task When PR Opened
         if: github.event.action != 'closed'
-        uses: SelSup/ya-tracker-action@v1.0.1
+        uses: SelSup/ya-tracker-action@v1.0.3
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: Move Task When PR Merged
         if: github.event.pull_request.merged == true
-        uses: SelSup/ya-tracker-action@v1.0.1
+        uses: SelSup/ya-tracker-action@v1.0.3
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -76,7 +76,7 @@ jobs:
 You can specify task numbers, separated by commas.
 
 ````yaml
-- uses: SelSup/ya-tracker-action@v1.0.1
+- uses: SelSup/ya-tracker-action@v1.0.3
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -90,7 +90,7 @@ You may need to ignore some long lifecycle tasks. Add tasks, separated by commas
 you do not want to automatically move, then you can ignore them.
 
 ````yaml
-- uses: SelSup/ya-tracker-action@v1.0.1
+- uses: SelSup/ya-tracker-action@v1.0.3
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -104,7 +104,7 @@ If true — a comment will be set to the current PR with the task address of the
 in the PR description.
 
 ```yaml
-- uses: SelSup/ya-tracker-action@v1.0.1
+- uses: SelSup/ya-tracker-action@v1.0.3
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -140,6 +140,13 @@ Example of config to build new version of component and add comment with version
   run: |
     docker build -t cr.yandex/{docker_registry}/{component}:${{ steps.tag_version.outputs.new_tag }} .
     docker push cr.yandex/{docker_registry}/{component}:${{ steps.tag_version.outputs.new_tag }}
+- name: Add comment to Yandex Tracker
+  uses: SelSup/ya-tracker-action@v1.0.3
+  with:
+    token: ${{secrets.GITHUB_TOKEN}}
+    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    comment: New version is ${{ steps.tag_version.outputs.new_tag }}
 ```
 
 ### Get all available transitions
@@ -156,7 +163,7 @@ curl -H "Authorization: OAuth <oauth2-token>" -H "X-Org-ID: <org-id>" -H "Conten
 See output of the action and find states:
 
 ```yaml
-- uses: SelSup/ya-tracker-action@v1.0.1
+- uses: SelSup/ya-tracker-action@v1.0.3
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -171,7 +178,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 ```yaml
 - name: Move Task When PR Opened
   if: github.event.action != 'closed'
-  uses: SelSup/ya-tracker-action@v1.0.1
+  uses: SelSup/ya-tracker-action@v1.0.3
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -180,7 +187,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 
 - name: Move Task When PR Merged
   if: github.event.pull_request.merged == true
-  uses: SelSup/ya-tracker-action@v1.0.1
+  uses: SelSup/ya-tracker-action@v1.0.3
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -193,11 +200,10 @@ You can move an issue when opening a PR and when merging a PR into different tra
 - `token`: **Required** Github token.
 - `yandex_oauth2_token`: **Required** Yandex oauth2 token. You need to register an OAUTH2 application and then get a
   user token. [Documentation](https://yandex.ru/dev/id/doc/dg/oauth/concepts/about.html).
-- `yandex_org_id`: **Required** ID of organization registered in Yandex Tracker.
-- `is_yandex_cloud_org`: **Optional** If only the Yandex Cloud Organization is applied to the Tracker, the
-  `X-Cloud-Org-ID` header is used.
+- `yandex_org_id`: **Required** ID of organization registered in [Yandex Tracker](https://tracker.yandex.com/settings).
 - `ignore`: **Optional** Ignored tasks separated by commas.
 - `tasks`: **Optional** The task key to be moved on board.
+- `comment`: **Optional** Text to add task comment
 - `task_url`: **Optional** The default value is false. Set to true if you want to comment on a PR with the task URL.
 - `to`: **Optional** Specify where you want to move the task. The default is `in_review` **for open PRs and `resolve`
   for merged PRs**.
