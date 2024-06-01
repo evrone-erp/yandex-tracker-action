@@ -52,7 +52,7 @@ jobs:
 
       - name: Move Task When PR Opened
         if: github.event.action != 'closed'
-        uses: SelSup/ya-tracker-action@v1
+        uses: SelSup/ya-tracker-action@v1.0.1
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: Move Task When PR Merged
         if: github.event.pull_request.merged == true
-        uses: SelSup/ya-tracker-action@v1
+        uses: SelSup/ya-tracker-action@v1.0.1
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -76,7 +76,7 @@ jobs:
 You can specify task numbers, separated by commas.
 
 ````yaml
-- uses: SelSup/ya-tracker-action@v1
+- uses: SelSup/ya-tracker-action@v1.0.1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -90,7 +90,7 @@ You may need to ignore some long lifecycle tasks. Add tasks, separated by commas
 you do not want to automatically move, then you can ignore them.
 
 ````yaml
-- uses: SelSup/ya-tracker-action@v1
+- uses: SelSup/ya-tracker-action@v1.0.1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -104,12 +104,42 @@ If true — a comment will be set to the current PR with the task address of the
 in the PR description.
 
 ```yaml
-- uses: SelSup/ya-tracker-action@v1
+- uses: SelSup/ya-tracker-action@v1.0.1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
     yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
     task_url: true
+```
+
+### Add Comment to Yandex Tracker
+
+Example of config to build new version of component and add comment with version
+
+```yaml
+- name: Create a GitHub release
+  uses: actions/create-release@v1
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  with:
+    tag_name: ${{ steps.tag_version.outputs.new_tag }}
+    release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+    body: ${{ steps.tag_version.outputs.changelog }}
+- name: Set up Docker Buildx
+  uses: docker/setup-buildx-action@v3
+- name: Login to Yandex Cloud Container Registry
+  id: login-cr
+  uses: yc-actions/yc-cr-login@v2
+  with:
+    yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+- name: Build, tag, and push image to Yandex Cloud Container Registry
+  env:
+    CR_REGISTRY: {docker_registry}
+    CR_REPO: yc-cr-github-action
+    IMAGE_TAG: ${{ steps.tag_version.outputs.new_tag }}
+  run: |
+    docker build -t cr.yandex/{docker_registry}/{component}:${{ steps.tag_version.outputs.new_tag }} .
+    docker push cr.yandex/{docker_registry}/{component}:${{ steps.tag_version.outputs.new_tag }}
 ```
 
 ### Get all available transitions
@@ -126,7 +156,7 @@ curl -H "Authorization: OAuth <oauth2-token>" -H "X-Org-ID: <org-id>" -H "Conten
 See output of the action and find states:
 
 ```yaml
-- uses: SelSup/ya-tracker-action@v1
+- uses: SelSup/ya-tracker-action@v1.0.1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -141,7 +171,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 ```yaml
 - name: Move Task When PR Opened
   if: github.event.action != 'closed'
-  uses: SelSup/ya-tracker-action@v1
+  uses: SelSup/ya-tracker-action@v1.0.1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -150,7 +180,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 
 - name: Move Task When PR Merged
   if: github.event.pull_request.merged == true
-  uses: SelSup/ya-tracker-action@v1
+  uses: SelSup/ya-tracker-action@v1.0.1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}

@@ -156,6 +156,38 @@ jobs:
     to: testing # или Тестирование - важно! Имя должно существовать в бизнес-процессе переходов задачи
 ```
 
+### Добавление комментария к задаче Yandex Tracker
+
+Пример GitHub action, который собирает новую версию, публикует ее в Yandex Docker Registry и добавления комментария в Yandex Tracker
+
+Укажите параметр comment с текстом комментария
+
+```yaml
+- name: Create a GitHub release
+  uses: actions/create-release@v1
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  with:
+    tag_name: ${{ steps.tag_version.outputs.new_tag }}
+    release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+    body: ${{ steps.tag_version.outputs.changelog }}
+- name: Set up Docker Buildx
+  uses: docker/setup-buildx-action@v3
+- name: Login to Yandex Cloud Container Registry
+  id: login-cr
+  uses: yc-actions/yc-cr-login@v2
+  with:
+    yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+- name: Build, tag, and push image to Yandex Cloud Container Registry
+  env:
+    CR_REGISTRY: {docker_registry}
+    CR_REPO: yc-cr-github-action
+    IMAGE_TAG: ${{ steps.tag_version.outputs.new_tag }}
+  run: |
+    docker build -t cr.yandex/{docker_registry}/{component}:${{ steps.tag_version.outputs.new_tag }} .
+    docker push cr.yandex/{docker_registry}/{component}:${{ steps.tag_version.outputs.new_tag }}
+```
+
 ## Если задача не существует
 
 В этом случае она будет проигнорирована и вы сможете увидеть в выводе работы экшена сообщение об этом
