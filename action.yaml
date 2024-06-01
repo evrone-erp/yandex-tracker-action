@@ -12,7 +12,8 @@ inputs:
     default: 'false'
     description: If true - set comment with the task url <https://tracker.yandex.ru/TASK_KEY> on pull_request
   comment:
-
+    required: false
+    description: Text of task comment
   to:
     required: false
     description: When PR is open or merged where should action move the task on the tracker board

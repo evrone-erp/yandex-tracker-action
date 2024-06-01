@@ -6,7 +6,7 @@ from environs import Env
 from github import Github
 
 from helpers.github import check_if_pr, get_pr_commits, set_pr_body
-from helpers.yandex import get_iam_token, move_task, task_exists, comment_task
+from helpers.yandex import comment_task, get_iam_token, move_task, task_exists
 
 env = Env()
 
@@ -61,18 +61,17 @@ if __name__ == "__main__":
     set_pr_body(task_keys=existing_tasks, pr=pr)
 
     if COMMENT:
-    	commentResponse = comment_task(
-                ignore_tasks=IGNORE_TASKS,
-                org_id=YANDEX_ORG_ID,
-                is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
-                pr=pr,
-                task_keys=task_keys,
-                comment=COMMENT,
-                token=iam_token,
-            )
-    	logger.info("Add comment response: %r", commentResponse)
-    	else:
-       		logger.warning("No comment")
+        commentResponse = comment_task(
+            ignore_tasks=IGNORE_TASKS,
+            org_id=YANDEX_ORG_ID,
+            is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
+            task_keys=task_keys,
+            comment=COMMENT,
+            token=iam_token,
+        )
+        logger.info("Add comment response: %r", commentResponse)
+    else:
+        logger.warning("No comment")
 
     if TARGET_STATUS:
         statuses = move_task(
