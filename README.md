@@ -1,8 +1,8 @@
 # Yandex Tracker action
 
-[RUS](https://github.com/evrone-erp/yandex-tracker-action/blob/master/README_RUS.md)
+[RUS](https://github.com/SelSup/ya-tracker-action/blob/master/README_RUS.md)
 
-This action allows you to automatically move tasks on the board.
+This action allows you to automatically change task status or add comment to task.
 
 Move the task at Yandex Tracker board.
 
@@ -52,7 +52,7 @@ jobs:
 
       - name: Move Task When PR Opened
         if: github.event.action != 'closed'
-        uses: evrone-erp/yandex-tracker-action@v1
+        uses: SelSup/ya-tracker-action@v1
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: Move Task When PR Merged
         if: github.event.pull_request.merged == true
-        uses: evrone-erp/yandex-tracker-action@v1
+        uses: SelSup/ya-tracker-action@v1
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -76,7 +76,7 @@ jobs:
 You can specify task numbers, separated by commas.
 
 ````yaml
-- uses: evrone-erp/yandex-tracker-action@v1
+- uses: SelSup/ya-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -90,7 +90,7 @@ You may need to ignore some long lifecycle tasks. Add tasks, separated by commas
 you do not want to automatically move, then you can ignore them.
 
 ````yaml
-- uses: evrone-erp/yandex-tracker-action@v1
+- uses: SelSup/ya-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -104,7 +104,7 @@ If true — a comment will be set to the current PR with the task address of the
 in the PR description.
 
 ```yaml
-- uses: evrone-erp/yandex-tracker-action@v1
+- uses: SelSup/ya-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -126,7 +126,7 @@ curl -H "Authorization: OAuth <oauth2-token>" -H "X-Org-ID: <org-id>" -H "Conten
 See output of the action and find states:
 
 ```yaml
-- uses: evrone-erp/yandex-tracker-action@v1
+- uses: SelSup/ya-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -141,7 +141,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 ```yaml
 - name: Move Task When PR Opened
   if: github.event.action != 'closed'
-  uses: evrone-erp/yandex-tracker-action@v1
+  uses: SelSup/ya-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -150,7 +150,7 @@ You can move an issue when opening a PR and when merging a PR into different tra
 
 - name: Move Task When PR Merged
   if: github.event.pull_request.merged == true
-  uses: evrone-erp/yandex-tracker-action@v1
+  uses: SelSup/ya-tracker-action@v1
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -172,7 +172,4 @@ You can move an issue when opening a PR and when merging a PR into different tra
 - `to`: **Optional** Specify where you want to move the task. The default is `in_review` **for open PRs and `resolve`
   for merged PRs**.
 
-[yandex-tracker-action](https://evrone.com/yandex-tracker-action?utm_source=github&utm_medium=yandex-tracker-action)
-project is created & supported by [Evrone](https://evrone.com/?utm_source=github&utm_medium=yandex-tracker-action)
-
-[<img src="https://evrone.com/logo/evrone-sponsored-logo.png" width=231>](https://evrone.com/?utm_source=evrone-django-template)
+Fork of [yandex-tracker-action](https://github.com/evrone-erp/yandex-tracker-action)
