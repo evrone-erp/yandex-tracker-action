@@ -189,6 +189,7 @@ def comment_task(
 
     if tasks:
         for task in filter(None, tasks):
+            logger.warning("Adding comment %s to task %s", task, comment)
             response = requests.post(
                 headers={
                     "Authorization": f"Bearer {token}",
@@ -196,7 +197,7 @@ def comment_task(
                     "Content-Type": "application/json",
                 },
                 url=f"https://api.tracker.yandex.net/v2/issues/{task}/comments",
-                json={"comment": comment},
+                json={"text": comment},
                 timeout=_REQUEST_TIMEOUT,
             )
             result = response.text

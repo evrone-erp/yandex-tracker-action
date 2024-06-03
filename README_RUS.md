@@ -54,7 +54,7 @@ jobs:
       # Выполняется, когда PR октрыт
       - name: Move Task When PR Opened
         if: github.event.action != 'closed'
-        uses: SelSup/ya-tracker-action@v1.0.3
+        uses: SelSup/ya-tracker-action@v1.0.4
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -63,7 +63,7 @@ jobs:
       # Выполняется, когда PR смержен
       - name: Move Task When PR Merged
         if: github.event.pull_request.merged == true
-        uses: SelSup/ya-tracker-action@v1.0.3
+        uses: SelSup/ya-tracker-action@v1.0.4
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -83,7 +83,7 @@ jobs:
 ```yaml
 - name: Move Task When PR Opened
   if: github.event.action != 'closed'
-  uses: SelSup/ya-tracker-action@v1.0.3
+  uses: SelSup/ya-tracker-action@v1.0.4
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -113,7 +113,7 @@ jobs:
 ```yaml
 - name: Move Task When PR Opened
   if: github.event.action != 'closed'
-  uses: SelSup/ya-tracker-action@v1.0.3
+  uses: SelSup/ya-tracker-action@v1.0.4
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -130,7 +130,7 @@ jobs:
 ```yaml
 - name: Move Task When PR Opened
   if: github.event.action != 'closed'
-  uses: SelSup/ya-tracker-action@v1.0.3
+  uses: SelSup/ya-tracker-action@v1.0.4
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -148,7 +148,7 @@ jobs:
 ```yaml
 - name: Move Task When PR Opened
   if: github.event.action != 'closed'
-  uses: SelSup/ya-tracker-action@v1.0.3
+  uses: SelSup/ya-tracker-action@v1.0.4
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -187,7 +187,7 @@ jobs:
     docker build -t cr.yandex/{docker_registry}/{component}:${{ steps.tag_version.outputs.new_tag }} .
     docker push cr.yandex/{docker_registry}/{component}:${{ steps.tag_version.outputs.new_tag }}
 - name: Add comment to Yandex Tracker
-  uses: SelSup/ya-tracker-action@v1.0.3
+  uses: SelSup/ya-tracker-action@v1.0.4
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
@@ -229,7 +229,7 @@ jobs:
 ```yaml
 - name: Move Task When PR Merged
   if: github.event.pull_request.merged == true
-  uses: SelSup/ya-tracker-action@v1.0.3
+  uses: SelSup/ya-tracker-action@v1.0.4
   with:
     token: ${{secrets.GITHUB_TOKEN}}
     yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
