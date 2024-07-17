@@ -1,5 +1,5 @@
 autopep8==2.0.4
-certifi==2023.11.17
+certifi==2024.7.4
 cffi==1.16.0
 charset-normalizer==3.3.2
 Deprecated==1.2.14
