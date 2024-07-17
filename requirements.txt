@@ -4,8 +4,8 @@ cffi==1.16.0
 charset-normalizer==3.3.2
 Deprecated==1.2.14
 environs==10.3.0
-idna==3.6
-install==1.3.5
+idna==3.7
+pip-install==1.3.5
 pycodestyle==2.11.1
 pycparser==2.21
 PyGithub==2.1.1
@@ -13,7 +13,7 @@ PyJWT==2.8.0
 PyNaCl==1.5.0
 pyparsing==3.1.1
 python-dotenv==1.0.0
-requests==2.31.0
+requests==2.32.2
 toml==0.10.2
 urllib3==2.1.0
 wrapt==1.16.0
