@@ -9,4 +9,7 @@ security:
       # PR: https://github.com/sqlalchemy/sqlalchemy/pull/8563
       reason: we don't use Mercurial VCS and don't use unsafe function
       expires: '2025-02-02'
+    70612:
+      # CVE-2019-8341: https://data.safetycli.com/v/70612/97c
+      # ADVISORY: In Jinja2, the from_string function is prone to Server Side Template Injection (SSTI) where it takes the "source" parameter as...
   continue-on-vulnerability-error: False
