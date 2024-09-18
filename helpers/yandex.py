@@ -57,15 +57,25 @@ def task_exists(
     existing_tasks = {}
 
     for task in filtered_tasks:
-        existing_tasks[task] = requests.get(
+        response = requests.get(
             headers={
                 "Authorization": f"Bearer {token}",
-                f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,
+                f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,  # noqa
                 "Content-Type": "application/json",
             },
             url=f"https://api.tracker.yandex.net/v2/issues/{task}",
             timeout=_REQUEST_TIMEOUT,
-        ).json()
+        )
+
+        if response.status_code != HTTPStatus.OK:
+            logger.warning(
+                "[SKIPPING] %s has error: %s (Status: %s)",
+                task,
+                response.text,
+                response.status_code,
+            )
+            continue
+        existing_tasks[task] = response.json()
 
     return [k for (k, v) in existing_tasks.items() if "errors" not in v]
 
@@ -97,7 +107,7 @@ def _get_all_transitions(
             response = requests.get(
                 headers={
                     "Authorization": f"Bearer {token}",
-                    f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,
+                    f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,  # noqa
                     "Content-Type": "application/json",
                 },
                 url=f"https://api.tracker.yandex.net/v2/issues/{task}/transitions",
@@ -154,16 +164,25 @@ def move_task(
     for k, v in transition_statuses.items():
         for a, b in v.items():
             if target_status in a or target_status in b:
-                response[k] = requests.post(
+                cur_response = requests.post(
                     headers={
                         "Authorization": f"Bearer {token}",
-                        f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,
+                        f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,  # noqa
                         "Content-Type": "application/json",
                     },
                     url=f"https://api.tracker.yandex.net/v2/issues/{k}/transitions/{a}/_execute",
                     json={"comment": f'Task moved to "{b}"'},
                     timeout=_REQUEST_TIMEOUT,
-                ).json()
+                )
+                if cur_response.status_code != HTTPStatus.OK:
+                    logger.warning(
+                        "[SKIPPING] %s has error: %s (Status: %s)",
+                        a,
+                        cur_response.text,
+                        cur_response.status_code,
+                    )
+                    continue
+                response[k] = cur_response.json()
                 pr.create_issue_comment(
                     body=f'Task **{k}** moved to **"{b}"** :rocket:'
                 )
@@ -180,11 +199,16 @@ def get_iam_token(oauth_token: str) -> str:
         url="https://iam.api.cloud.yandex.net/iam/v1/tokens",
         json={"yandexPassportOauthToken": oauth_token},
         timeout=_REQUEST_TIMEOUT,
-    ).json()
-
-    iam_token = response.get("iamToken")
+    )
+    if response.status_code != HTTPStatus.OK:
+        logger.warning(
+            "Get IAM has error: %s (Status: %s)", response.text, response.status_code
+        )
+        sys.exit(1)
+    response_data = response.json()
+    iam_token = response_data.get("iamToken")
     if not iam_token:
-        logger.warning("IAM token not found: %r", response)
+        logger.warning("IAM token not found: %r", response_data)
         sys.exit(1)
 
     return iam_token
