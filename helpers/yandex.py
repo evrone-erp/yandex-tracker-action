@@ -159,11 +159,14 @@ def move_task(
         task_keys=task_keys,
         token=token,
     )
-
+    print("move_task transition_statuses:", transition_statuses)
     response = {}
     for k, v in transition_statuses.items():
+        print("move_task transition_statuses items:", k, v)
         for a, b in v.items():
+            print("move_task transition_statuses a, b:", a, b, target_status)
             if target_status in a or target_status in b:
+                print("move_task Request", a, b)
                 cur_response = requests.post(
                     headers={
                         "Authorization": f"Bearer {token}",
@@ -174,6 +177,7 @@ def move_task(
                     json={"comment": f'Task moved to "{b}"'},
                     timeout=_REQUEST_TIMEOUT,
                 )
+                print("move_task Request response", a, b, cur_response.status_code, cur_response.text)
                 if cur_response.status_code != HTTPStatus.OK:
                     logger.warning(
                         "[SKIPPING] %s has error: %s (Status: %s)",

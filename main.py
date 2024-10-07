@@ -10,10 +10,10 @@ from helpers.yandex import get_iam_token, move_task, task_exists
 
 env = Env()
 
-REVIEW_STATUS = "in_review"
-RESOLVE_STATUS = "resolve"
+REVIEW_STATUS = "In Review"
+RESOLVE_STATUS = "Resolve"
 PR_OPEN_STATUS = "open"
-PR_CLOSED_STATUS = "closed"
+PR_CLOSED_STATUS = "Close"
 
 GITHUB_TOKEN = env("INPUT_TOKEN")
 GITHUB_EVENT_PATH = env("GITHUB_EVENT_PATH")
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     set_pr_body(task_keys=existing_tasks, pr=pr)
-
+    print("Base TARGET_STATUS", TARGET_STATUS)
     if TARGET_STATUS:
         target_status = TARGET_STATUS
     elif (
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         target_status = RESOLVE_STATUS
     else:
         target_status = None
-
+    print("Result TARGET_STATUS", target_status)
     if target_status:
         statuses = move_task(
             ignore_tasks=IGNORE_TASKS,
