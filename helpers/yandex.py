@@ -129,6 +129,42 @@ def _get_all_transitions(
     }
 
 
+def add_pr_link2task(
+    org_id: str, is_yandex_cloud_org: bool, token: str, task_key: str, pr_link: str
+) -> bool:
+    """
+    Add comment to task
+    Args:
+      org_id: str. Yandex's organization ID.
+      is_yandex_cloud_org: Yandex organization header definition ID flag.
+      token: Yandex IAM token.
+      task_key: Yandex Tracker Task Id
+      pr_link: Link to Pull Request
+
+    Returns:
+      Status of comment creation
+    """
+    text = (
+        '{% note info "Pull request was opened" %}\n\n' f"{pr_link}\n\n" "{% endnote %}"
+    )
+    response = requests.post(
+        headers={
+            "Authorization": f"Bearer {token}",
+            f"X{'-Cloud' if is_yandex_cloud_org else ''}-Org-ID": org_id,  # noqa
+            "Content-Type": "application/json",
+        },
+        url=f"https://api.tracker.yandex.net/v2/issues/{task_key}/comments",
+        json={"text": text},
+        timeout=_REQUEST_TIMEOUT,
+    )
+    if response.status_code != HTTPStatus.CREATED:
+        logger.warning(
+            "Add comment error: %s (Status: %s)", response.text, response.status_code
+        )
+        return False
+    return True
+
+
 def move_task(
     *,
     org_id: str,

@@ -6,7 +6,13 @@ from environs import Env
 from github import Github
 
 from helpers.github import check_if_pr, get_pr_commits, set_pr_body
-from helpers.yandex import get_iam_token, move_task, task_exists
+
+# conflict with black
+# isort: off
+from helpers.yandex import add_pr_link2task, get_iam_token, move_task, task_exists
+
+# isort: on
+
 
 env = Env()
 
@@ -42,7 +48,6 @@ if __name__ == "__main__":
 
     with open(GITHUB_EVENT_PATH, "r", encoding="utf8") as f:
         data = json.load(f)
-
     check_if_pr(data=data)
 
     github = Github(GITHUB_TOKEN)
@@ -62,7 +67,6 @@ if __name__ == "__main__":
     else:
         logger.warning("[SKIPPED] No tasks found!")
         sys.exit(0)
-
     set_pr_body(task_keys=existing_tasks, pr=pr)
 
     if TARGET_STATUS:
@@ -86,10 +90,21 @@ if __name__ == "__main__":
             org_id=YANDEX_ORG_ID,
             is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             pr=pr,
-            task_keys=task_keys,
+            task_keys=existing_tasks,
             target_status=target_status,
             token=iam_token,
         )
+
+        # Add comment with PR link to comment for tasks
+        if data.get("action", "") == "opened":  # check pull request action type
+            for task_key in existing_tasks:
+                add_pr_link2task(
+                    org_id=YANDEX_ORG_ID,
+                    is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
+                    token=iam_token,
+                    task_key=task_key,
+                    pr_link=pr.html_url,
+                )
         logger.info("Transition: %r", TARGET_STATUS)
         logger.info("Statuses: %r", statuses)
     else:
