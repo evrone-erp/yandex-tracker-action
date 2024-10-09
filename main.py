@@ -85,6 +85,7 @@ if __name__ == "__main__":
     print("GITHUB_ACTION", GITHUB_ACTION)
     print("pr.mergeable_state", pr.mergeable_state)
     print("pr.state", pr.state)
+    print("-------")
     if target_status:
         statuses = move_task(
             ignore_tasks=IGNORE_TASKS,
