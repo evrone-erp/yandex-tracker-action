@@ -6,17 +6,19 @@ from environs import Env
 from github import Github
 
 from helpers.github import check_if_pr, get_pr_commits, set_pr_body
-from helpers.yandex import get_iam_token, move_task, task_exists
+from helpers.yandex import get_iam_token, move_task, task_exists, add_pr_link2task
 
 env = Env()
 
-REVIEW_STATUS = "in_review"
+REVIEW_STATUS = "In Review" # "in_review"
 RESOLVE_STATUS = "resolve"
 PR_OPEN_STATUS = "open"
 PR_CLOSED_STATUS = "closed"
 
 GITHUB_TOKEN = env("INPUT_TOKEN")
 GITHUB_EVENT_PATH = env("GITHUB_EVENT_PATH")
+GITHUB_EVENT_NAME = env('GITHUB_EVENT_NAME')
+GITHUB_ACTION = env('GITHUB_ACTION')
 GITHUB_REPOSITORY = env("GITHUB_REPOSITORY")
 TASK_URL = env.bool("INPUT_TASK_URL", False)
 TASK_KEYS = env("INPUT_TASKS", "")
@@ -62,7 +64,6 @@ if __name__ == "__main__":
     else:
         logger.warning("[SKIPPED] No tasks found!")
         sys.exit(0)
-
     set_pr_body(task_keys=existing_tasks, pr=pr)
 
     if TARGET_STATUS:
@@ -80,16 +81,28 @@ if __name__ == "__main__":
     else:
         target_status = None
 
+    print("GITHUB_EVENT_NAME", GITHUB_EVENT_NAME)
+    print("GITHUB_ACTION", GITHUB_ACTION)
+    print("pr.mergeable_state", pr.mergeable_state)
+    print("pr.state", pr.state)
     if target_status:
         statuses = move_task(
             ignore_tasks=IGNORE_TASKS,
             org_id=YANDEX_ORG_ID,
             is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             pr=pr,
-            task_keys=task_keys,
+            task_keys=existing_tasks,
             target_status=target_status,
             token=iam_token,
         )
+        # for task_key in existing_tasks:
+        #     result = add_pr_link2task(
+        #         org_id=YANDEX_ORG_ID,
+        #         is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
+        #         token=iam_token,
+        #         task_key=task_key,
+        #         pr_link=pr.html_url
+        #     )
         logger.info("Transition: %r", TARGET_STATUS)
         logger.info("Statuses: %r", statuses)
     else:
