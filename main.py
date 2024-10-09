@@ -6,11 +6,11 @@ from environs import Env
 from github import Github
 
 from helpers.github import check_if_pr, get_pr_commits, set_pr_body
-from helpers.yandex import get_iam_token, move_task, task_exists
+from helpers.yandex import get_iam_token, move_task, task_exists, add_pr_link2task
 
 env = Env()
 
-REVIEW_STATUS = "in_review"
+REVIEW_STATUS = "In Review" # "in_review"
 RESOLVE_STATUS = "resolve"
 PR_OPEN_STATUS = "open"
 PR_CLOSED_STATUS = "closed"
@@ -42,12 +42,13 @@ if __name__ == "__main__":
 
     with open(GITHUB_EVENT_PATH, "r", encoding="utf8") as f:
         data = json.load(f)
-
+    print("data", data)
     check_if_pr(data=data)
 
     github = Github(GITHUB_TOKEN)
     repo = github.get_repo(GITHUB_REPOSITORY)
     pr = repo.get_pull(number=int(data["pull_request"]["number"]))
+    pr_action = data.get("action", "")
     commits = get_pr_commits(pr=pr)
     task_keys = list(set(TASK_KEYS.split(",") + commits))
     iam_token = get_iam_token(YANDEX_OAUTH2_TOKEN)
@@ -62,7 +63,6 @@ if __name__ == "__main__":
     else:
         logger.warning("[SKIPPED] No tasks found!")
         sys.exit(0)
-
     set_pr_body(task_keys=existing_tasks, pr=pr)
 
     if TARGET_STATUS:
@@ -80,16 +80,25 @@ if __name__ == "__main__":
     else:
         target_status = None
 
+    print("pr_action", pr_action)
     if target_status:
         statuses = move_task(
             ignore_tasks=IGNORE_TASKS,
             org_id=YANDEX_ORG_ID,
             is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             pr=pr,
-            task_keys=task_keys,
+            task_keys=existing_tasks,
             target_status=target_status,
             token=iam_token,
         )
+        # for task_key in existing_tasks:
+        #     result = add_pr_link2task(
+        #         org_id=YANDEX_ORG_ID,
+        #         is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
+        #         token=iam_token,
+        #         task_key=task_key,
+        #         pr_link=pr.html_url
+        #     )
         logger.info("Transition: %r", TARGET_STATUS)
         logger.info("Statuses: %r", statuses)
     else:
