@@ -1,7 +1,7 @@
 import logging
 import re
 import sys
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from github.PullRequest import PullRequest
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def _prepare_description(
     *,
-    task_keys: list[str],
+    tasks: Dict[str, Any],
     pr: PullRequest,
 ) -> Optional[str]:
     """
@@ -23,7 +23,10 @@ def _prepare_description(
       Description in string format if exists or None.
     """
     body = pr.body
-    links = [f"https://tracker.yandex.ru/{task}" for task in filter(None, task_keys)]
+    links = [
+        f"[[{task_key}] {task_data.get('summary')}](https://tracker.yandex.ru/{task_key})"  # noqa
+        for task_key, task_data in tasks.items()
+    ]
 
     task_links = ""
     for link in links:
@@ -60,16 +63,16 @@ def get_pr_commits(
 
 def set_pr_body(
     *,
-    task_keys: list[str],
+    tasks: Dict[str, Any],
     pr: PullRequest,
 ) -> None:
     """
     Set PR description with a link to tracker task.
     Args:
-      task_keys: list of Yandex tracker task keys.
+      tasks: list of Yandex tracker tasks.
       pr: GitHub PullRequest object.
     """
-    description = _prepare_description(task_keys=task_keys, pr=pr)
+    description = _prepare_description(tasks=tasks, pr=pr)
     if description:
         pr.edit(body=description)
 
