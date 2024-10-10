@@ -1,6 +1,7 @@
 import logging
 import sys
 from http import HTTPStatus
+from typing import Dict
 
 import requests
 from github.PullRequest import PullRequest
@@ -42,7 +43,7 @@ def task_exists(
     is_yandex_cloud_org: bool,
     tasks: list[str],
     token: str,
-) -> list[str]:
+) -> Dict:
     """
     Get Yandex API with task keys. If a task does not exist, remove from a list.
     Args:
@@ -76,8 +77,7 @@ def task_exists(
             )
             continue
         existing_tasks[task] = response.json()
-
-    return [k for (k, v) in existing_tasks.items() if "errors" not in v]
+    return {k: v for (k, v) in existing_tasks.items() if "errors" not in v}
 
 
 def _get_all_transitions(
