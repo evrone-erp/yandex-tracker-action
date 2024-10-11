@@ -1,6 +1,7 @@
 import json
 import logging
 import sys
+from typing import Dict
 
 from environs import Env
 from github import Github
@@ -58,7 +59,7 @@ if __name__ == "__main__":
     iam_token = get_iam_token(YANDEX_OAUTH2_TOKEN)
 
     if any(task_keys):
-        existing_tasks = task_exists(
+        existing_tasks: Dict = task_exists(
             org_id=YANDEX_ORG_ID,
             is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             tasks=task_keys,
@@ -67,7 +68,7 @@ if __name__ == "__main__":
     else:
         logger.warning("[SKIPPED] No tasks found!")
         sys.exit(0)
-    set_pr_body(task_keys=existing_tasks, pr=pr)
+    set_pr_body(tasks=existing_tasks, pr=pr)
 
     if TARGET_STATUS:
         target_status = TARGET_STATUS
@@ -90,7 +91,7 @@ if __name__ == "__main__":
             org_id=YANDEX_ORG_ID,
             is_yandex_cloud_org=IS_YANDEX_CLOUD_ORG,
             pr=pr,
-            task_keys=existing_tasks,
+            task_keys=list(existing_tasks),
             target_status=target_status,
             token=iam_token,
         )
