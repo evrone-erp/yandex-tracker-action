@@ -138,6 +138,38 @@ jobs:
     ignore: ERPOPS-7,EPR-21 # какие задачи игнорировать
 ```
 
+## Кастомизация паттерна ключа задачи
+
+По-умолчанию, ключи задач ожидают квадратные скобки. "[ERP-17] commit message" 
+Если необходимо обработать другие правила определения ключа задачи, укажите инпут `task_key_pattern` в файле `task-transition.yaml`:
+
+```yaml
+- name: Move Task When PR Opened
+  if: github.event.action != 'closed'
+  uses: evrone-erp/ya-tracker-action@v1
+  with:
+    token: ${{secrets.GITHUB_TOKEN}}
+    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    task_key_pattern: '(?<=\()[A-Za-z]+-\d+(?=\))' # feat(KEY-000): some message
+```
+
+## Отключение комментария в задаче трекера 
+
+При изменении статуса задачи по умолчанию в ней остается коммент виду "Task moved to review"
+С помощью указания опции notify_status_task как false вы можете избежать появление комментария в задаче
+
+```yaml
+- name: Move Task When PR Opened
+  if: github.event.action != 'closed'
+  uses: evrone-erp/ya-tracker-action@v1
+  with:
+    token: ${{secrets.GITHUB_TOKEN}}
+    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    notify_status_task: false
+````
+
 ## Указать состояние задачи
 
 По-умолчанию, при открытом PR задачи перемещаются в состояние `"На ревью"`. При смерженом - `"Решено"`.
@@ -216,6 +248,8 @@ jobs:
   с URL задачи.
 - `to`: **Опционально** Укажите, куда вы хотите переместить задачу. По умолчанию - `in_review` **для открытых PR
   и `resolve` для закрытых PR**.
+- `task_key_pattern`: **Optional** регулярное выражение для поиска ключа задачи
+- `notify_status_task`:  **Optional** Показывать ли комментарий об изменении статуса в задаче трекера
 
 [Документация по получению OAUTH2 токена от Яндекс](https://yandex.ru/dev/id/doc/dg/oauth/concepts/about.html)
 

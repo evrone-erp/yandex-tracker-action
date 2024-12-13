@@ -5,7 +5,6 @@ from typing import Dict, Optional
 
 from github.PullRequest import PullRequest
 
-TASK_KEY_PATTERN = re.compile(r"[^[]*\[([^]]*)\]")  # noqa
 TASK_LINK_TITLE_TEMPLATE = (
     "[[{task_key}] {task_title}](https://tracker.yandex.ru/{task_key})"
 )
@@ -47,6 +46,7 @@ def _prepare_description(
 def get_pr_commits(
     *,
     pr: PullRequest,
+    task_key_pattern: re.Pattern[str],
 ) -> list[str]:
     """
     Get all commits from PR to a list if there are many, or str if there is one.
@@ -58,7 +58,7 @@ def get_pr_commits(
     commits = []
 
     for commit in pr.get_commits():
-        all_matches = TASK_KEY_PATTERN.findall(commit.commit.message)
+        all_matches = task_key_pattern.findall(commit.commit.message)
         if not all_matches:
             continue
 

@@ -158,6 +158,38 @@ You can move an issue when opening a PR and when merging a PR into different tra
     to: 'merged'
 ```
 
+
+### Customize the task key pattern
+
+By default, task keys expect square brackets. “[ERP-17] commit message” 
+If you want to handle other task key definition rules, specify the `task_key_pattern` input in the `task-transition.yaml` file:
+
+```yaml
+- name: Move Task When PR Opened
+  if: github.event.action != 'closed'
+  uses: evrone-erp/ya-tracker-action@v1
+  with:
+    token: ${{{secrets.GITHUB_TOKEN}}}
+    yandex_org_id: ${{secrets.YANDEX_ORG_ID }}}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}}
+    task_key_pattern: '(?<=\()[A-Za-z]+-\d+(?=\))' # feat(KEY-000): some message
+```
+
+### Disabling Comments in Tracker Tasks
+
+When changing the status of a task, a comment like "Task moved to review" is added by default. By setting the `notify_status_task` option to `false`, you can prevent the comment from appearing in the task.
+
+```yaml
+- name: Move Task When PR Opened
+  if: github.event.action != 'closed'
+  uses: evrone-erp/ya-tracker-action@v1
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+    yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
+    yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+    notify_status_task: false
+```
+
 ## Inputs
 
 - `token`: **Required** Github token.
@@ -171,6 +203,8 @@ You can move an issue when opening a PR and when merging a PR into different tra
 - `task_url`: **Optional** The default value is false. Set to true if you want to comment on a PR with the task URL.
 - `to`: **Optional** Specify where you want to move the task. The default is `in_review` **for open PRs and `resolve`
   for merged PRs**.
+- `task_key_pattern`: **Optional** regexp pattern to find task's keys
+- `notify_status_task`:  **Optional** Show status changed comment in yandex tracker
 
 [yandex-tracker-action](https://evrone.com/yandex-tracker-action?utm_source=github&utm_medium=yandex-tracker-action)
 project is created & supported by [Evrone](https://evrone.com/?utm_source=github&utm_medium=yandex-tracker-action)

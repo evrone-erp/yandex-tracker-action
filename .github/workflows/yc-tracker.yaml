@@ -1,11 +1,12 @@
 name: YC Tracker
-on: 
+on:
   pull_request:
     types:
       - opened
       - reopened
       - synchronize
       - closed
+
 jobs:
   transition-task:
     runs-on: ubuntu-latest
@@ -15,6 +16,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      # Выполняется, когда PR октрыт
       - name: Move Task When PR Opened
         if: github.event.action != 'closed'
         uses: ./
@@ -22,9 +24,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
           yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+          task_key_pattern: '(?<=\()[A-Za-z]+-\d+(?=\))'
+          notify_status_task: false
           task_url: true
           ignore: ERP-31,ERP-32
+          to: in_review
 
+      # Выполняется, когда PR смержен
       - name: Move Task When PR Merged
         if: github.event.pull_request.merged == true
         uses: ./
@@ -32,5 +38,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           yandex_org_id: ${{ secrets.YANDEX_ORG_ID }}
           yandex_oauth2_token: ${{ secrets.YANDEX_OAUTH2_TOKEN }}
+          task_key_pattern: '(?<=\()[A-Za-z]+-\d+(?=\))'
+          notify_status_task: false
           task_url: true
           ignore: ERP-31,ERP-32
+          to: ready_for_test

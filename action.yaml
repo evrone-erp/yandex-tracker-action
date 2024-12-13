@@ -23,6 +23,17 @@ inputs:
   yandex_org_id:
     required: true
     description: YANDEX organization id for send the request with payload
+  is_yandex_cloud_org:
+    required: false
+    default: 'false' 
+    description: Set to true if you connect Yandex Tracker to Yandex Cloud
+  notify_status_task:
+    required: false
+    default: 'true'
+    description: Show status changed comment in yandex tracker
+  task_key_pattern:
+    required: false
+    description: Tasks key regular expression pattern
 
 runs:
   using: docker
