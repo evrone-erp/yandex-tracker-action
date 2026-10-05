@@ -1,7 +1,7 @@
 -r requirements.txt
 
 black==26.5.1
-isort==9.0.1
+isort==9.0.2
 flake8==7.3.0
 flake8-bandit==4.1.1
 pylint==4.0.8
